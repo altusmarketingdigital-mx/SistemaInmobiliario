@@ -115,15 +115,21 @@ export default function PublicMap() {
                 onClick={(e) => {
                   let target = e.target;
                   let found = false;
+                  let firstId = null;
                   while (target && target !== e.currentTarget && !found) {
                     if (target.id) {
-                      const loteInfo = dbLotes.find(l => l.codigo === target.id);
+                      if (!firstId) firstId = target.id;
+                      const loteInfo = dbLotes.find(l => String(l.codigo).trim() === String(target.id).trim());
                       if (loteInfo && loteInfo.estado === 'Disponible') {
                         setSelectedLote(loteInfo);
                         found = true;
                       }
                     }
                     target = target.parentNode;
+                  }
+                  
+                  if (e.altKey && firstId) {
+                    alert("Modo Diagnóstico: El ID de esta figura es '" + firstId + "'. Regístralo exactamente así en el Administrador.");
                   }
                 }}
               />
