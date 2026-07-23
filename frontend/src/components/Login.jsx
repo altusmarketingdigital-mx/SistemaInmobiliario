@@ -23,7 +23,7 @@ export default function Login() {
       } else if (err.response.status === 401) {
         setError('Credenciales inválidas. Verifica tu correo y contraseña.');
       } else {
-        setError('Error interno del servidor (Revisa la conexión a Neon DB).');
+        setError(err.response.data?.error || 'Error interno del servidor (Revisa la conexión a Neon DB).');
       }
     }
   };
