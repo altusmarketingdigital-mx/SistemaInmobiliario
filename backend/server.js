@@ -42,6 +42,12 @@ app.get('/api/setup-db', async (req, res) => {
         logotipo_url TEXT,
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
       );
+      CREATE TABLE IF NOT EXISTS planos (
+        id SERIAL PRIMARY KEY,
+        proyecto_id INTEGER REFERENCES proyectos(id) ON DELETE CASCADE,
+        archivo_svg TEXT NOT NULL,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      );
       CREATE TABLE IF NOT EXISTS lotes (
         id SERIAL PRIMARY KEY,
         codigo VARCHAR(50) UNIQUE NOT NULL,
@@ -50,6 +56,15 @@ app.get('/api/setup-db', async (req, res) => {
         estado VARCHAR(50) DEFAULT 'Disponible',
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
       );
+      
+      -- Add missing columns to lotes if they don't exist
+      ALTER TABLE lotes ADD COLUMN IF NOT EXISTS plano_id INTEGER REFERENCES planos(id) ON DELETE CASCADE;
+      ALTER TABLE lotes ADD COLUMN IF NOT EXISTS manzana VARCHAR(50);
+      ALTER TABLE lotes ADD COLUMN IF NOT EXISTS numero_lote VARCHAR(50);
+      ALTER TABLE lotes ADD COLUMN IF NOT EXISTS data_lote_ref VARCHAR(100);
+      ALTER TABLE lotes ADD COLUMN IF NOT EXISTS enganche_minimo_pct DECIMAL(5,2);
+      ALTER TABLE lotes ADD COLUMN IF NOT EXISTS apartado_minimo DECIMAL(10,2);
+      ALTER TABLE lotes ADD COLUMN IF NOT EXISTS plazos_autorizados VARCHAR(255);
     `);
 
     // Crear usuario admin si no existe
