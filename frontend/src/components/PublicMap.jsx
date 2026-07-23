@@ -1,5 +1,6 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
+import api from '../api';
 
 // Mocks simulando la info que vendrá del backend según el ID del proyecto
 const mockProyectosInfo = {
@@ -17,28 +18,41 @@ const mockLotes = [
 export default function PublicMap() {
   const { id } = useParams();
   const [selectedLote, setSelectedLote] = useState(null);
+  const [data, setData] = useState({ proyecto: null, plano: null, lotes: [] });
+  const [loading, setLoading] = useState(true);
 
-  const proyecto = mockProyectosInfo[id] || mockProyectosInfo['1'];
+  useEffect(() => {
+    const fetchPlanoInfo = async () => {
+      try {
+        const response = await api.get(`/proyectos/${id}/plano`);
+        setData(response.data);
+      } catch (error) {
+        console.error("Error fetching map info", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchPlanoInfo();
+  }, [id]);
+
+  const proyecto = data.proyecto;
+  const plano = data.plano;
+  const dbLotes = data.lotes;
 
   const handleLoteClick = (loteCodigo) => {
-    const loteInfo = mockLotes.find(l => l.codigo === loteCodigo);
+    const loteInfo = dbLotes.find(l => l.codigo === loteCodigo);
     if (loteInfo && loteInfo.estado === 'Disponible') {
       setSelectedLote(loteInfo);
     }
   };
 
-  const getLoteClass = (codigo) => {
-    const lote = mockLotes.find(l => l.codigo === codigo);
-    const base = "transition-all duration-500 cursor-pointer hover:stroke-white hover:stroke-[3px] hover:drop-shadow-[0_0_15px_rgba(255,255,255,0.8)] ";
-    if (!lote) return base + "fill-stone-300";
-    
-    switch(lote.estado) {
-      case 'Disponible': return base + "fill-emerald-500 hover:fill-emerald-400";
-      case 'Apartado': return base + "fill-amber-400";
-      case 'Vendido': return base + "fill-rose-500 cursor-not-allowed hover:stroke-none hover:drop-shadow-none";
-      default: return base + "fill-stone-400";
-    }
-  };
+  if (loading) {
+    return <div className="min-h-screen bg-stone-900 flex items-center justify-center text-white">Cargando mapa...</div>;
+  }
+
+  if (!proyecto) {
+    return <div className="min-h-screen bg-stone-900 flex items-center justify-center text-white">Proyecto no encontrado.</div>;
+  }
 
   return (
     <div className="w-full flex-1 relative flex bg-stone-900 overflow-hidden">
@@ -67,10 +81,7 @@ export default function PublicMap() {
               <span className="text-emerald-400 text-xs font-bold tracking-wide uppercase">Etapa 1 Disponible</span>
             </div>
             <h2 className="text-5xl lg:text-7xl font-['Outfit'] font-extrabold text-white leading-[1.1] tracking-tight">
-              {proyecto.nombre.split(' ')[0]} <br/> 
-              <span className={`text-transparent bg-clip-text bg-gradient-to-r ${proyecto.colorTheme}`}>
-                {proyecto.nombre.split(' ').slice(1).join(' ')}
-              </span>
+              {proyecto.nombre}
             </h2>
             <p className="mt-6 text-stone-400 text-lg leading-relaxed max-w-md">
               Explora nuestro plano interactivo y descubre los espacios disponibles en la zona más exclusiva.
@@ -98,42 +109,16 @@ export default function PublicMap() {
           <div className="relative w-full max-w-4xl p-2 rounded-[2.5rem] bg-white/5 border border-white/10 backdrop-blur-3xl shadow-2xl">
             <div className="absolute inset-0 rounded-[2.5rem] ring-1 ring-inset ring-white/10 pointer-events-none"></div>
             
-            <svg viewBox="0 0 800 400" className="w-full h-auto drop-shadow-2xl rounded-[2rem] overflow-hidden">
-              {/* Fake Roads / Background Elements */}
-              <rect width="100%" height="100%" fill="rgba(255,255,255,0.02)" />
-              <path d="M 50 200 L 750 200" stroke="rgba(255,255,255,0.1)" strokeWidth="40" strokeLinecap="round" />
-              <path d="M 50 200 L 750 200" stroke="rgba(255,255,255,0.3)" strokeWidth="2" strokeDasharray="10 10" strokeLinecap="round" />
-              
-              {/* Lote 1 */}
-              <g className="group">
-                <polygon 
-                  points="100,50 250,50 250,180 100,180" 
-                  className={getLoteClass('L01')}
-                  onClick={() => handleLoteClick('L01')}
-                />
-                <text x="175" y="125" textAnchor="middle" fill="white" className="font-['Outfit'] font-bold text-2xl pointer-events-none opacity-80 group-hover:opacity-100 transition-opacity">L01</text>
-              </g>
-              
-              {/* Lote 2 */}
-              <g className="group">
-                <polygon 
-                  points="260,50 410,50 410,180 260,180" 
-                  className={getLoteClass('L02')}
-                  onClick={() => handleLoteClick('L02')}
-                />
-                <text x="335" y="125" textAnchor="middle" fill="white" className="font-['Outfit'] font-bold text-2xl pointer-events-none opacity-80">L02</text>
-              </g>
-
-              {/* Lote 3 */}
-              <g className="group">
-                <polygon 
-                  points="420,50 570,50 570,180 420,180" 
-                  className={getLoteClass('L03')}
-                  onClick={() => handleLoteClick('L03')}
-                />
-                <text x="495" y="125" textAnchor="middle" fill="white" className="font-['Outfit'] font-bold text-2xl pointer-events-none opacity-80">L03</text>
-              </g>
-            </svg>
+            {plano && plano.archivo_svg ? (
+              <div 
+                className="w-full h-auto drop-shadow-2xl rounded-[2rem] overflow-hidden [&>svg]:w-full [&>svg]:h-full" 
+                dangerouslySetInnerHTML={{ __html: plano.archivo_svg }}
+              />
+            ) : (
+              <div className="w-full h-[400px] flex items-center justify-center text-white/50 text-lg font-bold">
+                No se ha subido ningún plano para este proyecto aún.
+              </div>
+            )}
           </div>
         </div>
 
