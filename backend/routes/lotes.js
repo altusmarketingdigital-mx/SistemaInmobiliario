@@ -37,4 +37,22 @@ router.put('/:id/estado', async (req, res) => {
   }
 });
 
+// Crear un nuevo lote
+router.post('/', async (req, res) => {
+  const { plano_id, codigo, superficie_m2, precio_m2 } = req.body;
+  try {
+    const { rows } = await db.query(
+      'INSERT INTO lotes (plano_id, codigo, superficie_m2, precio_m2) VALUES ($1, $2, $3, $4) RETURNING *',
+      [plano_id || null, codigo, superficie_m2, precio_m2]
+    );
+    res.status(201).json(rows[0]);
+  } catch (error) {
+    console.error(error);
+    if (error.code === '23505') {
+      return res.status(400).json({ error: 'El código del lote ya existe' });
+    }
+    res.status(500).json({ error: 'Error al crear el lote' });
+  }
+});
+
 module.exports = router;

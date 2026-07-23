@@ -17,6 +17,9 @@ export default function Admin() {
   const [nuevoPlano, setNuevoPlano] = useState({ proyecto_id: '', nombre_etapa: '', archivo_svg: '' });
   const [isUploading, setIsUploading] = useState(false);
   
+  const [showLoteModal, setShowLoteModal] = useState(false);
+  const [nuevoLote, setNuevoLote] = useState({ plano_id: '', codigo: '', superficie_m2: '', precio_m2: '' });
+  
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -110,6 +113,19 @@ export default function Admin() {
     }
   };
 
+  const handleCrearLote = async (e) => {
+    e.preventDefault();
+    try {
+      await api.post('/admin/lotes', nuevoLote);
+      setShowLoteModal(false);
+      setNuevoLote({ plano_id: '', codigo: '', superficie_m2: '', precio_m2: '' });
+      fetchLotes();
+    } catch (error) {
+      console.error("Error creating lote", error);
+      alert(error.response?.data?.error || "Error al crear el lote. Revisa la consola.");
+    }
+  };
+
   const handleLogout = () => {
     localStorage.removeItem('token');
     localStorage.removeItem('user');
@@ -182,6 +198,11 @@ export default function Admin() {
             {activeTab === 'planos' && (
               <button onClick={() => setShowPlanoModal(true)} className="bg-[#b91c1c] text-white px-5 py-2.5 rounded-xl font-bold text-sm shadow-lg shadow-red-900/20 hover:-translate-y-0.5 transition-transform">
                 Subir SVG
+              </button>
+            )}
+            {activeTab === 'lotes' && (
+              <button onClick={() => setShowLoteModal(true)} className="bg-[#b91c1c] text-white px-5 py-2.5 rounded-xl font-bold text-sm shadow-lg shadow-red-900/20 hover:-translate-y-0.5 transition-transform">
+                + Nuevo Lote
               </button>
             )}
           </header>
@@ -390,6 +411,67 @@ export default function Admin() {
                 <button type="button" onClick={() => setShowPlanoModal(false)} className="px-5 py-2.5 rounded-xl font-semibold text-stone-500 hover:bg-stone-100">Cancelar</button>
                 <button type="submit" disabled={isUploading || !nuevoPlano.archivo_svg} className="px-5 py-2.5 rounded-xl font-bold bg-[#b91c1c] text-white hover:bg-red-800 disabled:opacity-50">
                   {isUploading ? 'Guardando...' : 'Guardar Plano'}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* MODAL NUEVO LOTE */}
+      {showLoteModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-stone-900/50 backdrop-blur-sm">
+          <div className="bg-white rounded-3xl p-8 w-full max-w-lg shadow-2xl animate-in zoom-in-95">
+            <h2 className="text-2xl font-bold text-stone-900 mb-6">Alta de Terreno / Lote</h2>
+            <form onSubmit={handleCrearLote} className="space-y-4">
+              <div>
+                <label className="block text-sm font-semibold text-stone-700 mb-2">Plano Asociado (Opcional)</label>
+                <select 
+                  value={nuevoLote.plano_id}
+                  onChange={e => setNuevoLote({...nuevoLote, plano_id: e.target.value})}
+                  className="w-full px-4 py-3 rounded-xl border border-stone-200 focus:border-[#b91c1c] outline-none"
+                >
+                  <option value="">-- Sin plano específico --</option>
+                  {planos.map(p => (
+                    <option key={p.id} value={p.id}>{p.nombre_etapa}</option>
+                  ))}
+                </select>
+              </div>
+              <div>
+                <label className="block text-sm font-semibold text-stone-700 mb-2">Código en el SVG (ID)</label>
+                <input 
+                  type="text" required
+                  value={nuevoLote.codigo} onChange={e => setNuevoLote({...nuevoLote, codigo: e.target.value})}
+                  className="w-full px-4 py-3 rounded-xl border border-stone-200 focus:border-[#b91c1c] outline-none"
+                  placeholder="Ej: L01, MZA1-05"
+                />
+                <p className="text-xs text-stone-500 mt-1">Este código debe coincidir exactamente con el ID dentro del archivo SVG para que sea clickeable.</p>
+              </div>
+              <div className="flex gap-4">
+                <div className="w-1/2">
+                  <label className="block text-sm font-semibold text-stone-700 mb-2">Superficie (m²)</label>
+                  <input 
+                    type="number" step="0.01" required
+                    value={nuevoLote.superficie_m2} onChange={e => setNuevoLote({...nuevoLote, superficie_m2: e.target.value})}
+                    className="w-full px-4 py-3 rounded-xl border border-stone-200 focus:border-[#b91c1c] outline-none"
+                    placeholder="Ej: 150.50"
+                  />
+                </div>
+                <div className="w-1/2">
+                  <label className="block text-sm font-semibold text-stone-700 mb-2">Precio por m² ($)</label>
+                  <input 
+                    type="number" step="0.01" required
+                    value={nuevoLote.precio_m2} onChange={e => setNuevoLote({...nuevoLote, precio_m2: e.target.value})}
+                    className="w-full px-4 py-3 rounded-xl border border-stone-200 focus:border-[#b91c1c] outline-none"
+                    placeholder="Ej: 3200"
+                  />
+                </div>
+              </div>
+              
+              <div className="flex justify-end gap-3 pt-4">
+                <button type="button" onClick={() => setShowLoteModal(false)} className="px-5 py-2.5 rounded-xl font-semibold text-stone-500 hover:bg-stone-100">Cancelar</button>
+                <button type="submit" className="px-5 py-2.5 rounded-xl font-bold bg-[#b91c1c] text-white hover:bg-red-800 shadow-lg shadow-red-900/20">
+                  Crear Lote
                 </button>
               </div>
             </form>
