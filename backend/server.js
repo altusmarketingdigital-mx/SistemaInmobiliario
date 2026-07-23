@@ -67,11 +67,9 @@ app.use('/api/admin/proyectos', authMiddleware, require('./routes/proyectos'));
 app.use('/api/admin/planos', authMiddleware, require('./routes/planos'));
 app.use('/api/admin/lotes', authMiddleware, require('./routes/lotes'));
 
-// Solo iniciar el servidor si no estamos en un entorno Serverless (Vercel)
-if (process.env.NODE_ENV !== 'production') {
-  app.listen(port, () => {
-    console.log(`Server running on port ${port}`);
-  });
+const PORT = process.env.PORT || 5000;
+if (process.env.NODE_ENV !== 'production' && require.main === module) {
+  app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
 }
 
 // Exportar la app para Vercel Serverless
