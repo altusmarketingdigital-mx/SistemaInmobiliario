@@ -110,8 +110,18 @@ export default function PublicMap() {
             
             {plano && plano.archivo_svg ? (
               <div 
-                className="w-full h-auto rounded-[2rem] overflow-hidden [&>svg]:w-full [&>svg]:h-full" 
+                className="w-full h-auto rounded-[2rem] overflow-hidden [&>svg]:w-full [&>svg]:h-full cursor-pointer" 
                 dangerouslySetInnerHTML={{ __html: plano.archivo_svg }}
+                onClick={(e) => {
+                  let target = e.target;
+                  while (target && target !== e.currentTarget) {
+                    if (target.id) {
+                      handleLoteClick(target.id);
+                      break;
+                    }
+                    target = target.parentNode;
+                  }
+                }}
               />
             ) : (
               <div className="w-full h-[400px] flex items-center justify-center text-slate-400 text-lg font-bold">
