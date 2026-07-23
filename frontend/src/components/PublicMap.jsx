@@ -47,20 +47,19 @@ export default function PublicMap() {
   };
 
   if (loading) {
-    return <div className="min-h-screen bg-stone-900 flex items-center justify-center text-white">Cargando mapa...</div>;
+    return <div className="min-h-screen bg-slate-50 flex items-center justify-center text-slate-500">Cargando mapa...</div>;
   }
 
   if (!proyecto) {
-    return <div className="min-h-screen bg-stone-900 flex items-center justify-center text-white">Proyecto no encontrado.</div>;
+    return <div className="min-h-screen bg-slate-50 flex items-center justify-center text-slate-500">Proyecto no encontrado.</div>;
   }
 
   return (
-    <div className="w-full flex-1 relative flex bg-stone-900 overflow-hidden">
+    <div className="w-full flex-1 relative flex bg-slate-50 overflow-hidden">
       {/* Background Decorators */}
       <div className="absolute top-0 left-0 w-full h-full overflow-hidden pointer-events-none">
-        <div className="absolute -top-[30%] -left-[10%] w-[70%] h-[70%] rounded-full bg-red-900/20 blur-[120px]"></div>
-        <div className="absolute top-[40%] -right-[10%] w-[50%] h-[50%] rounded-full bg-[#b91c1c]/10 blur-[100px]"></div>
-        <div className="absolute inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-20 mix-blend-overlay"></div>
+        <div className="absolute -top-[30%] -left-[10%] w-[70%] h-[70%] rounded-full bg-emerald-100/50 blur-[120px]"></div>
+        <div className="absolute top-[40%] -right-[10%] w-[50%] h-[50%] rounded-full bg-blue-100/50 blur-[100px]"></div>
       </div>
 
       <div className="relative w-full h-full flex flex-col xl:flex-row items-center justify-center p-6 lg:p-12 gap-8">
@@ -68,54 +67,54 @@ export default function PublicMap() {
         {/* Left Side: Text & Legend */}
         <div className="w-full xl:w-1/3 flex flex-col justify-center z-10 space-y-8 animate-in fade-in slide-in-from-bottom-8 duration-700">
           <div>
-            <Link to="/" className="inline-flex items-center gap-2 text-stone-400 hover:text-red-400 transition-colors mb-8 font-medium text-sm">
+            <Link to="/" className="inline-flex items-center gap-2 text-slate-500 hover:text-slate-800 transition-colors mb-8 font-medium text-sm">
               <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" /></svg>
               Volver a Proyectos
             </Link>
             
-            <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-white/10 border border-white/10 backdrop-blur-md mb-6">
+            <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-emerald-50 border border-emerald-100 mb-6">
               <span className="relative flex h-2.5 w-2.5">
                 <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
                 <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-emerald-500"></span>
               </span>
-              <span className="text-emerald-400 text-xs font-bold tracking-wide uppercase">Etapa 1 Disponible</span>
+              <span className="text-emerald-700 text-xs font-bold tracking-wide uppercase">Etapa 1 Disponible</span>
             </div>
-            <h2 className="text-5xl lg:text-7xl font-['Outfit'] font-extrabold text-white leading-[1.1] tracking-tight">
+            <h2 className="text-5xl lg:text-7xl font-['Outfit'] font-extrabold text-slate-900 leading-[1.1] tracking-tight">
               {proyecto.nombre}
             </h2>
-            <p className="mt-6 text-stone-400 text-lg leading-relaxed max-w-md">
+            <p className="mt-6 text-slate-600 text-lg leading-relaxed max-w-md">
               Explora nuestro plano interactivo y descubre los espacios disponibles en la zona más exclusiva.
             </p>
           </div>
 
-          <div className="flex flex-wrap gap-4 pt-4 border-t border-white/10">
+          <div className="flex flex-wrap gap-4 pt-4 border-t border-slate-200">
             <div className="flex items-center gap-2">
-              <div className="w-4 h-4 rounded-md bg-emerald-500 shadow-[0_0_10px_rgba(16,185,129,0.4)]"></div>
-              <span className="text-sm font-medium text-stone-300">Disponible</span>
+              <div className="w-4 h-4 rounded-md bg-emerald-500 shadow-[0_0_10px_rgba(16,185,129,0.3)]"></div>
+              <span className="text-sm font-medium text-slate-700">Disponible</span>
             </div>
             <div className="flex items-center gap-2">
-              <div className="w-4 h-4 rounded-md bg-amber-400"></div>
-              <span className="text-sm font-medium text-stone-300">Apartado</span>
+              <div className="w-4 h-4 rounded-md bg-amber-400 shadow-[0_0_10px_rgba(251,191,36,0.3)]"></div>
+              <span className="text-sm font-medium text-slate-700">Apartado</span>
             </div>
             <div className="flex items-center gap-2">
-              <div className="w-4 h-4 rounded-md bg-rose-500"></div>
-              <span className="text-sm font-medium text-stone-300">Vendido</span>
+              <div className="w-4 h-4 rounded-md bg-rose-500 shadow-[0_0_10px_rgba(244,63,94,0.3)]"></div>
+              <span className="text-sm font-medium text-slate-700">Vendido</span>
             </div>
           </div>
         </div>
 
         {/* Right Side: Interactive Map */}
         <div className="w-full xl:w-2/3 h-[50vh] min-h-[400px] xl:h-auto flex items-center justify-center relative z-10 animate-in fade-in zoom-in-95 duration-1000 delay-200">
-          <div className="relative w-full max-w-4xl p-2 rounded-[2.5rem] bg-white/5 border border-white/10 backdrop-blur-3xl shadow-2xl">
-            <div className="absolute inset-0 rounded-[2.5rem] ring-1 ring-inset ring-white/10 pointer-events-none"></div>
+          <div className="relative w-full max-w-4xl p-2 rounded-[2.5rem] bg-white shadow-[0_20px_50px_-12px_rgba(0,0,0,0.1)] border border-slate-100">
+            <div className="absolute inset-0 rounded-[2.5rem] ring-1 ring-inset ring-slate-100/50 pointer-events-none"></div>
             
             {plano && plano.archivo_svg ? (
               <div 
-                className="w-full h-auto drop-shadow-2xl rounded-[2rem] overflow-hidden [&>svg]:w-full [&>svg]:h-full" 
+                className="w-full h-auto rounded-[2rem] overflow-hidden [&>svg]:w-full [&>svg]:h-full" 
                 dangerouslySetInnerHTML={{ __html: plano.archivo_svg }}
               />
             ) : (
-              <div className="w-full h-[400px] flex items-center justify-center text-white/50 text-lg font-bold">
+              <div className="w-full h-[400px] flex items-center justify-center text-slate-400 text-lg font-bold">
                 No se ha subido ningún plano para este proyecto aún.
               </div>
             )}
