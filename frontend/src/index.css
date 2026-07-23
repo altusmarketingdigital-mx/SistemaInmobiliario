@@ -1,0 +1,34 @@
+@import "tailwindcss";
+
+@theme {
+  --color-disponible: #22c55e;
+  --color-apartado: #eab308;
+  --color-vendido: #ef4444;
+  --color-bloqueado: #6b7280;
+}
+
+@layer utilities {
+  .svg-lote {
+    @apply transition-all duration-300 cursor-pointer;
+  }
+  .svg-lote:hover {
+    @apply opacity-80 stroke-white stroke-2 drop-shadow-md;
+  }
+  .svg-lote.estado-disponible {
+    @apply fill-disponible;
+  }
+  .svg-lote.estado-apartado {
+    @apply fill-apartado;
+  }
+  .svg-lote.estado-vendido {
+    @apply fill-vendido;
+  }
+  .svg-lote.estado-bloqueado {
+    @apply fill-bloqueado;
+  }
+}
+
+body {
+  font-family: 'Inter', sans-serif;
+  @apply bg-gray-50 text-gray-900;
+}
