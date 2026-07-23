@@ -114,10 +114,14 @@ export default function PublicMap() {
                 dangerouslySetInnerHTML={{ __html: plano.archivo_svg }}
                 onClick={(e) => {
                   let target = e.target;
-                  while (target && target !== e.currentTarget) {
+                  let found = false;
+                  while (target && target !== e.currentTarget && !found) {
                     if (target.id) {
-                      handleLoteClick(target.id);
-                      break;
+                      const loteInfo = dbLotes.find(l => l.codigo === target.id);
+                      if (loteInfo && loteInfo.estado === 'Disponible') {
+                        setSelectedLote(loteInfo);
+                        found = true;
+                      }
                     }
                     target = target.parentNode;
                   }
