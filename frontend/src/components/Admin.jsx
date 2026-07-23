@@ -5,19 +5,24 @@ import api from '../api';
 export default function Admin() {
   const [activeTab, setActiveTab] = useState('proyectos'); // 'proyectos', 'planos', 'lotes'
   
-  // Data states
   const [lotes, setLotes] = useState([]);
   const [proyectos, setProyectos] = useState([]);
+  const [planos, setPlanos] = useState([]);
   
   // Modal states
   const [showProyectoModal, setShowProyectoModal] = useState(false);
   const [nuevoProyecto, setNuevoProyecto] = useState({ nombre: '', ubicacion: '', descripcion: '', logotipo_url: '' });
+  
+  const [showPlanoModal, setShowPlanoModal] = useState(false);
+  const [nuevoPlano, setNuevoPlano] = useState({ proyecto_id: '', nombre_etapa: '', archivo_svg: '' });
+  const [isUploading, setIsUploading] = useState(false);
   
   const navigate = useNavigate();
 
   useEffect(() => {
     if (activeTab === 'lotes') fetchLotes();
     if (activeTab === 'proyectos') fetchProyectos();
+    if (activeTab === 'planos') fetchPlanos();
   }, [activeTab]);
 
   const fetchLotes = async () => {
@@ -33,6 +38,15 @@ export default function Admin() {
     try {
       const response = await api.get('/admin/proyectos');
       setProyectos(response.data);
+    } catch (error) {
+      handleAuthError(error);
+    }
+  };
+
+  const fetchPlanos = async () => {
+    try {
+      const response = await api.get('/admin/planos');
+      setPlanos(response.data);
     } catch (error) {
       handleAuthError(error);
     }
@@ -65,6 +79,34 @@ export default function Admin() {
     } catch (error) {
       console.error("Error creating project", error);
       alert("Error al crear el proyecto. Revisa la consola o verifica la conexión con Neon DB.");
+    }
+  };
+
+  const handleSVGUpload = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onload = (event) => {
+        setNuevoPlano({ ...nuevoPlano, archivo_svg: event.target.result });
+      };
+      reader.readAsText(file);
+    }
+  };
+
+  const handleSubirPlano = async (e) => {
+    e.preventDefault();
+    setIsUploading(true);
+    try {
+      await api.post('/admin/planos', nuevoPlano);
+      setShowPlanoModal(false);
+      setNuevoPlano({ proyecto_id: '', nombre_etapa: '', archivo_svg: '' });
+      fetchPlanos();
+      alert("Plano guardado con éxito.");
+    } catch (error) {
+      console.error("Error al subir plano", error);
+      alert("Error al guardar plano. Verifica la consola.");
+    } finally {
+      setIsUploading(false);
     }
   };
 
@@ -138,7 +180,7 @@ export default function Admin() {
               </button>
             )}
             {activeTab === 'planos' && (
-              <button className="bg-[#b91c1c] text-white px-5 py-2.5 rounded-xl font-bold text-sm shadow-lg shadow-red-900/20 hover:-translate-y-0.5 transition-transform">
+              <button onClick={() => setShowPlanoModal(true)} className="bg-[#b91c1c] text-white px-5 py-2.5 rounded-xl font-bold text-sm shadow-lg shadow-red-900/20 hover:-translate-y-0.5 transition-transform">
                 Subir SVG
               </button>
             )}
@@ -172,9 +214,26 @@ export default function Admin() {
           )}
 
           {activeTab === 'planos' && (
-            <div className="bg-white rounded-2xl shadow-sm border border-stone-200 p-8 text-center text-stone-500">
-              <svg className="w-16 h-16 mx-auto text-stone-300 mb-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7" /></svg>
-              Interfaz de Carga de Planos SVG y Mapper UI (Próximamente)
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {planos.length === 0 ? (
+                <div className="col-span-full bg-white rounded-2xl shadow-sm border border-stone-200 p-8 text-center text-stone-500">
+                  <svg className="w-16 h-16 mx-auto text-stone-300 mb-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7" /></svg>
+                  Aún no has subido ningún plano. Haz clic en "Subir SVG".
+                </div>
+              ) : (
+                planos.map(plano => {
+                  const pAsociado = proyectos.find(p => p.id === plano.proyecto_id);
+                  return (
+                    <div key={plano.id} className="bg-white rounded-2xl shadow-sm border border-stone-200 p-6 flex flex-col group">
+                      <div className="h-48 bg-stone-50 rounded-xl mb-4 overflow-hidden relative border border-stone-100 flex items-center justify-center p-4">
+                        <div className="w-full h-full [&>svg]:w-full [&>svg]:h-full [&>svg]:object-contain" dangerouslySetInnerHTML={{ __html: plano.archivo_svg }}></div>
+                      </div>
+                      <h3 className="font-bold text-lg text-stone-900">{plano.nombre_etapa}</h3>
+                      <p className="text-[#b91c1c] text-sm font-medium">{pAsociado ? pAsociado.nombre : 'Proyecto Desconocido'}</p>
+                    </div>
+                  );
+                })
+              )}
             </div>
           )}
 
@@ -279,6 +338,59 @@ export default function Admin() {
               <div className="flex justify-end gap-3 pt-4">
                 <button type="button" onClick={() => setShowProyectoModal(false)} className="px-5 py-2.5 rounded-xl font-semibold text-stone-500 hover:bg-stone-100">Cancelar</button>
                 <button type="submit" className="px-5 py-2.5 rounded-xl font-bold bg-[#b91c1c] text-white hover:bg-red-800 shadow-lg shadow-red-900/20">Guardar Proyecto</button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* MODAL SUBIR PLANO */}
+      {showPlanoModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-stone-900/50 backdrop-blur-sm">
+          <div className="bg-white rounded-3xl p-8 w-full max-w-lg shadow-2xl animate-in zoom-in-95">
+            <h2 className="text-2xl font-bold text-stone-900 mb-6">Subir Plano SVG</h2>
+            <form onSubmit={handleSubirPlano} className="space-y-4">
+              <div>
+                <label className="block text-sm font-semibold text-stone-700 mb-2">Seleccionar Proyecto</label>
+                <select 
+                  required
+                  value={nuevoPlano.proyecto_id}
+                  onChange={e => setNuevoPlano({...nuevoPlano, proyecto_id: e.target.value})}
+                  className="w-full px-4 py-3 rounded-xl border border-stone-200 focus:border-[#b91c1c] outline-none"
+                >
+                  <option value="">-- Elige un proyecto --</option>
+                  {proyectos.map(p => (
+                    <option key={p.id} value={p.id}>{p.nombre}</option>
+                  ))}
+                </select>
+              </div>
+              <div>
+                <label className="block text-sm font-semibold text-stone-700 mb-2">Nombre de Etapa / Manzana</label>
+                <input 
+                  type="text" required
+                  value={nuevoPlano.nombre_etapa} onChange={e => setNuevoPlano({...nuevoPlano, nombre_etapa: e.target.value})}
+                  className="w-full px-4 py-3 rounded-xl border border-stone-200 focus:border-[#b91c1c] outline-none"
+                  placeholder="Ej: Etapa 1"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-semibold text-stone-700 mb-2">Archivo SVG</label>
+                <input 
+                  type="file" required accept=".svg"
+                  onChange={handleSVGUpload}
+                  className="w-full px-4 py-3 rounded-xl border border-stone-200 text-sm file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-red-50 file:text-[#b91c1c] hover:file:bg-red-100"
+                />
+              </div>
+              {nuevoPlano.archivo_svg && (
+                <div className="text-xs text-green-600 font-bold bg-green-50 p-2 rounded">
+                  ✅ Archivo SVG cargado en memoria ({Math.round(nuevoPlano.archivo_svg.length / 1024)} kb)
+                </div>
+              )}
+              <div className="flex justify-end gap-3 pt-4">
+                <button type="button" onClick={() => setShowPlanoModal(false)} className="px-5 py-2.5 rounded-xl font-semibold text-stone-500 hover:bg-stone-100">Cancelar</button>
+                <button type="submit" disabled={isUploading || !nuevoPlano.archivo_svg} className="px-5 py-2.5 rounded-xl font-bold bg-[#b91c1c] text-white hover:bg-red-800 disabled:opacity-50">
+                  {isUploading ? 'Guardando...' : 'Guardar Plano'}
+                </button>
               </div>
             </form>
           </div>
