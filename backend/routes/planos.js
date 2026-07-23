@@ -30,7 +30,7 @@ router.post('/', async (req, res) => {
     res.status(201).json(rows[0]);
   } catch (error) {
     console.error(error);
-    res.status(500).json({ error: 'Error al subir el plano' });
+    res.status(500).json({ error: error.message || 'Error al subir el plano' });
   }
 });
 
