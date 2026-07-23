@@ -1,6 +1,9 @@
 {
   "name": "real-estate-erp-root",
   "private": true,
+  "scripts": {
+    "build": "npm run build --prefix frontend"
+  },
   "dependencies": {
     "pg": "^8.11.3",
     "bcrypt": "^5.1.1",
