@@ -2,6 +2,17 @@ const express = require('express');
 const router = express.Router();
 const db = require('../db');
 
+// Obtener todos los proyectos (Vista Pública)
+router.get('/', async (req, res) => {
+  try {
+    const { rows } = await db.query('SELECT * FROM proyectos ORDER BY created_at DESC');
+    res.json(rows);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: 'Error al obtener proyectos' });
+  }
+});
+
 // Obtener la información del proyecto y su plano (Vista Pública)
 router.get('/:id/plano', async (req, res) => {
   const { id } = req.params;
