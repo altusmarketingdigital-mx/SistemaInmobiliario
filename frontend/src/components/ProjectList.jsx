@@ -10,7 +10,7 @@ export default function ProjectList() {
     const fetchProyectos = async () => {
       try {
         const response = await api.get('/proyectos');
-        setProyectos(response.data);
+        setProyectos(Array.isArray(response.data) ? response.data : []);
       } catch (error) {
         console.error("Error al cargar los proyectos:", error);
       } finally {
