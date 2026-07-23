@@ -23,6 +23,13 @@ export default function Admin() {
   const navigate = useNavigate();
 
   useEffect(() => {
+    // Siempre cargar todo para que los selects en los modales tengan datos
+    fetchProyectos();
+    fetchPlanos();
+    fetchLotes();
+  }, []);
+
+  useEffect(() => {
     if (activeTab === 'lotes') fetchLotes();
     if (activeTab === 'proyectos') fetchProyectos();
     if (activeTab === 'planos') fetchPlanos();
