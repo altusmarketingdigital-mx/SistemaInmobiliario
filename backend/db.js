@@ -1,16 +1,13 @@
-const { Pool } = require('@neondatabase/serverless');
+const { neon } = require('@neondatabase/serverless');
 require('dotenv').config();
 
-const pool = new Pool({
-  connectionString: process.env.DATABASE_URL,
-  connectionTimeoutMillis: 30000, // Dar 30 segundos para que Neon despierte (Cold Start)
-  idleTimeoutMillis: 30000,
-});
-
-pool.on('error', (err, client) => {
-  console.error('Unexpected error on idle client', err);
-});
+const sql = neon(process.env.DATABASE_URL);
 
 module.exports = {
-  query: (text, params) => pool.query(text, params),
+  query: async (text, params) => {
+    // Usar la función query() del driver HTTP y envolver el resultado en { rows }
+    // para mantener compatibilidad con el resto del backend.
+    const result = await sql.query(text, params || []);
+    return { rows: result };
+  },
 };
