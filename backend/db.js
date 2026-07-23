@@ -1,7 +1,8 @@
 const { neon } = require('@neondatabase/serverless');
 require('dotenv').config();
 
-const sql = neon(process.env.DATABASE_URL);
+const connectionString = process.env.DATABASE_URL || 'postgresql://dummy:dummy@dummy.neon.tech/dummy';
+const sql = neon(connectionString);
 
 module.exports = {
   query: async (text, params) => {
