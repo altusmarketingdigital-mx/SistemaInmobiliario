@@ -1,0 +1,9 @@
+{
+  "name": "real-estate-erp-root",
+  "private": true,
+  "dependencies": {
+    "pg": "^8.11.3",
+    "bcrypt": "^5.1.1",
+    "dotenv": "^16.4.5"
+  }
+}
