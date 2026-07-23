@@ -25,7 +25,7 @@ app.use('/api/health', (req, res) => res.json({ status: 'ok' }));
 app.get('/api/setup-db', async (req, res) => {
   try {
     const db = require('./db');
-    const bcrypt = require('bcrypt');
+    const bcrypt = require('bcryptjs');
 
     await db.query(`
       CREATE TABLE IF NOT EXISTS usuarios (
