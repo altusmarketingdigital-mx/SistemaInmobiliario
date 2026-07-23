@@ -28,7 +28,7 @@ export default function Admin() {
   const fetchLotes = async () => {
     try {
       const response = await api.get('/admin/lotes');
-      setLotes(response.data);
+      setLotes(Array.isArray(response.data) ? response.data : []);
     } catch (error) {
       handleAuthError(error);
     }
@@ -37,7 +37,7 @@ export default function Admin() {
   const fetchProyectos = async () => {
     try {
       const response = await api.get('/admin/proyectos');
-      setProyectos(response.data);
+      setProyectos(Array.isArray(response.data) ? response.data : []);
     } catch (error) {
       handleAuthError(error);
     }
@@ -46,7 +46,7 @@ export default function Admin() {
   const fetchPlanos = async () => {
     try {
       const response = await api.get('/admin/planos');
-      setPlanos(response.data);
+      setPlanos(Array.isArray(response.data) ? response.data : []);
     } catch (error) {
       handleAuthError(error);
     }
