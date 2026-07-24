@@ -24,7 +24,7 @@ export default function ProjectList() {
     <div className="w-full min-h-screen bg-[#FDFDFD] text-stone-900 font-['Plus_Jakarta_Sans'] selection:bg-red-500/20">
       
       {/* HERO SECTION */}
-      <div className="relative w-full h-[60vh] md:h-[70vh] flex items-center justify-center overflow-hidden bg-white">
+      <div className="relative w-full min-h-[60vh] md:min-h-[70vh] flex items-center justify-center overflow-hidden bg-white py-24 pb-36">
         {/* Background Gradients & Effects */}
         <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,_var(--tw-gradient-stops))] from-red-50 via-white to-white"></div>
         <div className="absolute top-0 left-0 w-full h-full bg-[url('https://www.transparenttextures.com/patterns/cubes.png')] opacity-10 mix-blend-overlay"></div>
