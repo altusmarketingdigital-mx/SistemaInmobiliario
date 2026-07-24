@@ -16,6 +16,10 @@ export default function Admin() {
   const [inversionistas, setInversionistas] = useState([]);
   const [comisiones, setComisiones] = useState([]);
   
+  const [bancos, setBancos] = useState([]);
+  const [transacciones, setTransacciones] = useState([]);
+  const [cobranza, setCobranza] = useState([]);
+  
   // Modal states
   const [showProyectoModal, setShowProyectoModal] = useState(false);
   const [nuevoProyecto, setNuevoProyecto] = useState({ nombre: '', ubicacion: '', descripcion: '', logotipo_url: '' });
@@ -42,6 +46,18 @@ export default function Admin() {
   const [showInversionistaModal, setShowInversionistaModal] = useState(false);
   const [nuevoInversionista, setNuevoInversionista] = useState({ nombre: '', telefono: '', email: '', total_invertido: 0 });
   
+  const [showBancoModal, setShowBancoModal] = useState(false);
+  const [nuevoBanco, setNuevoBanco] = useState({ nombre: '', cuenta: '', clabe: '', saldo: 0 });
+
+  const [showTransaccionModal, setShowTransaccionModal] = useState(false);
+  const [nuevaTransaccion, setNuevaTransaccion] = useState({ tipo: 'Ingreso', monto: '', concepto: '', banco_id: '', fecha: '' });
+
+  const [showCobranzaModal, setShowCobranzaModal] = useState(false);
+  const [nuevaCobranza, setNuevaCobranza] = useState({ operacion_id: '', monto_esperado: '', fecha_vencimiento: '', notas: '' });
+
+  const [showPagarCobranzaModal, setShowPagarCobranzaModal] = useState(false);
+  const [cobranzaAPagar, setCobranzaAPagar] = useState({ id: '', banco_id: '' });
+  
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -55,6 +71,9 @@ export default function Admin() {
     fetchAgentes();
     fetchInversionistas();
     fetchComisiones();
+    fetchBancos();
+    fetchTransacciones();
+    fetchCobranza();
   }, []);
 
   useEffect(() => {
@@ -67,6 +86,9 @@ export default function Admin() {
     if (activeTab === 'agentes') fetchAgentes();
     if (activeTab === 'inversionistas') fetchInversionistas();
     if (activeTab === 'comisiones') fetchComisiones();
+    if (activeTab === 'bancos') fetchBancos();
+    if (activeTab === 'transacciones') fetchTransacciones();
+    if (activeTab === 'cobranza') fetchCobranza();
   }, [activeTab]);
 
   const fetchLotes = async () => {
@@ -145,6 +167,33 @@ export default function Admin() {
     try {
       const response = await api.get('/admin/comisiones');
       setComisiones(Array.isArray(response.data) ? response.data : []);
+    } catch (error) {
+      handleAuthError(error);
+    }
+  };
+
+  const fetchBancos = async () => {
+    try {
+      const response = await api.get('/admin/bancos');
+      setBancos(Array.isArray(response.data) ? response.data : []);
+    } catch (error) {
+      handleAuthError(error);
+    }
+  };
+
+  const fetchTransacciones = async () => {
+    try {
+      const response = await api.get('/admin/transacciones');
+      setTransacciones(Array.isArray(response.data) ? response.data : []);
+    } catch (error) {
+      handleAuthError(error);
+    }
+  };
+
+  const fetchCobranza = async () => {
+    try {
+      const response = await api.get('/admin/cobranza');
+      setCobranza(Array.isArray(response.data) ? response.data : []);
     } catch (error) {
       handleAuthError(error);
     }
@@ -299,6 +348,61 @@ export default function Admin() {
     }
   };
 
+  const handleCrearBanco = async (e) => {
+    e.preventDefault();
+    try {
+      await api.post('/admin/bancos', nuevoBanco);
+      setShowBancoModal(false);
+      setNuevoBanco({ nombre: '', cuenta: '', clabe: '', saldo: 0 });
+      fetchBancos();
+    } catch (error) {
+      console.error(error);
+      alert("Error al crear banco.");
+    }
+  };
+
+  const handleCrearTransaccion = async (e) => {
+    e.preventDefault();
+    try {
+      await api.post('/admin/transacciones', nuevaTransaccion);
+      setShowTransaccionModal(false);
+      setNuevaTransaccion({ tipo: 'Ingreso', monto: '', concepto: '', banco_id: '', fecha: '' });
+      fetchTransacciones();
+      fetchBancos(); // Refresh bank balances
+    } catch (error) {
+      console.error(error);
+      alert("Error al crear transaccion.");
+    }
+  };
+
+  const handleCrearCobranza = async (e) => {
+    e.preventDefault();
+    try {
+      await api.post('/admin/cobranza', nuevaCobranza);
+      setShowCobranzaModal(false);
+      setNuevaCobranza({ operacion_id: '', monto_esperado: '', fecha_vencimiento: '', notas: '' });
+      fetchCobranza();
+    } catch (error) {
+      console.error(error);
+      alert("Error al crear registro de cobranza.");
+    }
+  };
+
+  const handlePagarCobranza = async (e) => {
+    e.preventDefault();
+    try {
+      await api.put(`/admin/cobranza/${cobranzaAPagar.id}/pagar`, { banco_id: cobranzaAPagar.banco_id });
+      setShowPagarCobranzaModal(false);
+      setCobranzaAPagar({ id: '', banco_id: '' });
+      fetchCobranza();
+      fetchTransacciones();
+      fetchBancos();
+    } catch (error) {
+      console.error(error);
+      alert("Error al pagar cobranza.");
+    }
+  };
+
   const handleLogout = () => {
     localStorage.removeItem('token');
     localStorage.removeItem('user');
@@ -391,6 +495,34 @@ export default function Admin() {
             <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 14l6-6m-5.5.5h.01m4.99 5h.01M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16l3.5-2 3.5 2 3.5-2 3.5 2zM10 8.5a.5.5 0 11-1 0 .5.5 0 011 0zm5 5a.5.5 0 11-1 0 .5.5 0 011 0z" /></svg>
             Comisiones
           </button>
+
+          <div className="pt-4 mt-4 border-t border-stone-800">
+            <h3 className="px-4 text-xs font-bold text-stone-500 uppercase tracking-wider mb-2">Finanzas</h3>
+            
+            <button 
+              onClick={() => setActiveTab('bancos')}
+              className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-semibold transition-all ${activeTab === 'bancos' ? 'bg-[#b91c1c] text-white shadow-lg shadow-red-900/20' : 'text-stone-400 hover:bg-stone-800 hover:text-white'}`}
+            >
+              <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" /></svg>
+              Bancos
+            </button>
+
+            <button 
+              onClick={() => setActiveTab('transacciones')}
+              className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-semibold transition-all ${activeTab === 'transacciones' ? 'bg-[#b91c1c] text-white shadow-lg shadow-red-900/20' : 'text-stone-400 hover:bg-stone-800 hover:text-white'}`}
+            >
+              <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4" /></svg>
+              Ingresos y Egresos
+            </button>
+
+            <button 
+              onClick={() => setActiveTab('cobranza')}
+              className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-semibold transition-all ${activeTab === 'cobranza' ? 'bg-[#b91c1c] text-white shadow-lg shadow-red-900/20' : 'text-stone-400 hover:bg-stone-800 hover:text-white'}`}
+            >
+              <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+              Cobranza
+            </button>
+          </div>
         </nav>
 
         <div className="p-4 border-t border-stone-800">
@@ -449,6 +581,21 @@ export default function Admin() {
             {activeTab === 'inversionistas' && (
               <button onClick={() => setShowInversionistaModal(true)} className="bg-[#b91c1c] text-white px-5 py-2.5 rounded-xl font-bold text-sm shadow-lg shadow-red-900/20 hover:-translate-y-0.5 transition-transform">
                 + Nuevo Inversionista
+              </button>
+            )}
+            {activeTab === 'bancos' && (
+              <button onClick={() => setShowBancoModal(true)} className="bg-[#b91c1c] text-white px-5 py-2.5 rounded-xl font-bold text-sm shadow-lg shadow-red-900/20 hover:-translate-y-0.5 transition-transform">
+                + Nuevo Banco
+              </button>
+            )}
+            {activeTab === 'transacciones' && (
+              <button onClick={() => setShowTransaccionModal(true)} className="bg-[#b91c1c] text-white px-5 py-2.5 rounded-xl font-bold text-sm shadow-lg shadow-red-900/20 hover:-translate-y-0.5 transition-transform">
+                + Nueva Transacción
+              </button>
+            )}
+            {activeTab === 'cobranza' && (
+              <button onClick={() => setShowCobranzaModal(true)} className="bg-[#b91c1c] text-white px-5 py-2.5 rounded-xl font-bold text-sm shadow-lg shadow-red-900/20 hover:-translate-y-0.5 transition-transform">
+                + Registrar Cobranza
               </button>
             )}
           </header>
@@ -751,6 +898,125 @@ export default function Admin() {
                           {c.estado === 'Pendiente' && (
                             <button onClick={() => handlePagarComision(c.id)} className="px-3 py-1.5 bg-emerald-600 text-white text-xs font-bold rounded-lg hover:bg-emerald-700 transition-colors">
                               Marcar Pagada
+                            </button>
+                          )}
+                        </td>
+                      </tr>
+                    ))
+                  )}
+                </tbody>
+              </table>
+            </div>
+          )}
+
+          {activeTab === 'bancos' && (
+            <div className="bg-white rounded-2xl shadow-sm border border-stone-200 overflow-hidden">
+              <table className="w-full text-left">
+                <thead className="bg-stone-50 border-b border-stone-200 text-stone-600">
+                  <tr>
+                    <th className="p-5 font-semibold text-sm">Banco / Nombre</th>
+                    <th className="p-5 font-semibold text-sm">Cuenta</th>
+                    <th className="p-5 font-semibold text-sm">CLABE</th>
+                    <th className="p-5 font-semibold text-sm">Saldo Actual</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-stone-100">
+                  {bancos.length === 0 ? (
+                    <tr><td colSpan="4" className="p-8 text-center text-stone-500">No hay bancos registrados.</td></tr>
+                  ) : (
+                    bancos.map(b => (
+                      <tr key={b.id} className="hover:bg-stone-50 transition-colors group">
+                        <td className="p-5 font-bold text-stone-900">{b.nombre}</td>
+                        <td className="p-5 text-stone-600">{b.cuenta || '-'}</td>
+                        <td className="p-5 text-stone-600">{b.clabe || '-'}</td>
+                        <td className="p-5 font-bold text-emerald-600">${b.saldo}</td>
+                      </tr>
+                    ))
+                  )}
+                </tbody>
+              </table>
+            </div>
+          )}
+
+          {activeTab === 'transacciones' && (
+            <div className="bg-white rounded-2xl shadow-sm border border-stone-200 overflow-hidden">
+              <table className="w-full text-left">
+                <thead className="bg-stone-50 border-b border-stone-200 text-stone-600">
+                  <tr>
+                    <th className="p-5 font-semibold text-sm">Fecha</th>
+                    <th className="p-5 font-semibold text-sm">Tipo</th>
+                    <th className="p-5 font-semibold text-sm">Concepto</th>
+                    <th className="p-5 font-semibold text-sm">Banco</th>
+                    <th className="p-5 font-semibold text-sm">Monto ($)</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-stone-100">
+                  {transacciones.length === 0 ? (
+                    <tr><td colSpan="5" className="p-8 text-center text-stone-500">No hay transacciones registradas.</td></tr>
+                  ) : (
+                    transacciones.map(t => (
+                      <tr key={t.id} className="hover:bg-stone-50 transition-colors group">
+                        <td className="p-5 text-stone-600">{new Date(t.fecha).toLocaleDateString()}</td>
+                        <td className="p-5">
+                          <span className={`px-2 py-1 rounded-full text-xs font-bold uppercase
+                            ${t.tipo === 'Ingreso' ? 'bg-emerald-100 text-emerald-700' : 'bg-red-100 text-red-700'}`}>
+                            {t.tipo}
+                          </span>
+                        </td>
+                        <td className="p-5 font-medium text-stone-900">{t.concepto}</td>
+                        <td className="p-5 text-stone-600">{t.banco_nombre || 'Efectivo / Ninguno'}</td>
+                        <td className={`p-5 font-bold ${t.tipo === 'Ingreso' ? 'text-emerald-600' : 'text-red-600'}`}>
+                          {t.tipo === 'Ingreso' ? '+' : '-'}${t.monto}
+                        </td>
+                      </tr>
+                    ))
+                  )}
+                </tbody>
+              </table>
+            </div>
+          )}
+
+          {activeTab === 'cobranza' && (
+            <div className="bg-white rounded-2xl shadow-sm border border-stone-200 overflow-hidden">
+              <table className="w-full text-left">
+                <thead className="bg-stone-50 border-b border-stone-200 text-stone-600">
+                  <tr>
+                    <th className="p-5 font-semibold text-sm">Operación</th>
+                    <th className="p-5 font-semibold text-sm">Cliente</th>
+                    <th className="p-5 font-semibold text-sm">Vencimiento</th>
+                    <th className="p-5 font-semibold text-sm">Monto a Cobrar ($)</th>
+                    <th className="p-5 font-semibold text-sm">Estado</th>
+                    <th className="p-5 font-semibold text-sm">Acciones</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-stone-100">
+                  {cobranza.length === 0 ? (
+                    <tr><td colSpan="6" className="p-8 text-center text-stone-500">No hay registros de cobranza.</td></tr>
+                  ) : (
+                    cobranza.map(c => (
+                      <tr key={c.id} className="hover:bg-stone-50 transition-colors group">
+                        <td className="p-5">
+                          <div className="font-bold text-stone-900">{c.lote_codigo}</div>
+                          <div className="text-xs text-stone-500">{c.tipo_operacion}</div>
+                        </td>
+                        <td className="p-5 font-medium text-stone-800">{c.comprador_nombre}</td>
+                        <td className="p-5 text-stone-600">{c.fecha_vencimiento ? new Date(c.fecha_vencimiento).toLocaleDateString() : '-'}</td>
+                        <td className="p-5 font-bold text-emerald-600">${c.monto_esperado}</td>
+                        <td className="p-5">
+                          <span className={`px-2 py-1 rounded-full text-xs font-bold uppercase
+                            ${c.estado === 'Pagado' ? 'bg-emerald-100 text-emerald-700' : 
+                              c.estado === 'Pendiente' ? 'bg-amber-100 text-amber-700' : 
+                              'bg-red-100 text-red-700'}`}>
+                            {c.estado}
+                          </span>
+                        </td>
+                        <td className="p-5">
+                          {c.estado !== 'Pagado' && (
+                            <button onClick={() => {
+                              setCobranzaAPagar({ id: c.id, banco_id: '' });
+                              setShowPagarCobranzaModal(true);
+                            }} className="px-3 py-1.5 bg-emerald-600 text-white text-xs font-bold rounded-lg hover:bg-emerald-700 transition-colors">
+                              Registrar Pago
                             </button>
                           )}
                         </td>
@@ -1218,6 +1484,207 @@ export default function Admin() {
               <div className="flex justify-end gap-3 pt-4">
                 <button type="button" onClick={() => setShowInversionistaModal(false)} className="px-5 py-2.5 rounded-xl font-semibold text-stone-500 hover:bg-stone-100">Cancelar</button>
                 <button type="submit" className="px-5 py-2.5 rounded-xl font-bold bg-[#b91c1c] text-white hover:bg-red-800 shadow-lg shadow-red-900/20">Crear Inversionista</button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* MODAL NUEVO BANCO */}
+      {showBancoModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-stone-900/50 backdrop-blur-sm">
+          <div className="bg-white rounded-3xl p-8 w-full max-w-lg shadow-2xl animate-in zoom-in-95">
+            <h2 className="text-2xl font-bold text-stone-900 mb-6">Registrar Cuenta Bancaria</h2>
+            <form onSubmit={handleCrearBanco} className="space-y-4">
+              <div>
+                <label className="block text-sm font-semibold text-stone-700 mb-2">Alias / Nombre (Ej: Bancomer Empresa)</label>
+                <input 
+                  type="text" required
+                  value={nuevoBanco.nombre} onChange={e => setNuevoBanco({...nuevoBanco, nombre: e.target.value})}
+                  className="w-full px-4 py-3 rounded-xl border border-stone-200 focus:border-[#b91c1c] outline-none"
+                />
+              </div>
+              <div className="flex gap-4">
+                <div className="w-1/2">
+                  <label className="block text-sm font-semibold text-stone-700 mb-2">No. de Cuenta</label>
+                  <input 
+                    type="text"
+                    value={nuevoBanco.cuenta} onChange={e => setNuevoBanco({...nuevoBanco, cuenta: e.target.value})}
+                    className="w-full px-4 py-3 rounded-xl border border-stone-200 focus:border-[#b91c1c] outline-none"
+                  />
+                </div>
+                <div className="w-1/2">
+                  <label className="block text-sm font-semibold text-stone-700 mb-2">CLABE Interbancaria</label>
+                  <input 
+                    type="text"
+                    value={nuevoBanco.clabe} onChange={e => setNuevoBanco({...nuevoBanco, clabe: e.target.value})}
+                    className="w-full px-4 py-3 rounded-xl border border-stone-200 focus:border-[#b91c1c] outline-none"
+                  />
+                </div>
+              </div>
+              <div>
+                <label className="block text-sm font-semibold text-stone-700 mb-2">Saldo Inicial ($)</label>
+                <input 
+                  type="number" step="0.01"
+                  value={nuevoBanco.saldo} onChange={e => setNuevoBanco({...nuevoBanco, saldo: e.target.value})}
+                  className="w-full px-4 py-3 rounded-xl border border-stone-200 focus:border-[#b91c1c] outline-none"
+                />
+              </div>
+              <div className="flex justify-end gap-3 pt-4">
+                <button type="button" onClick={() => setShowBancoModal(false)} className="px-5 py-2.5 rounded-xl font-semibold text-stone-500 hover:bg-stone-100">Cancelar</button>
+                <button type="submit" className="px-5 py-2.5 rounded-xl font-bold bg-[#b91c1c] text-white hover:bg-red-800 shadow-lg shadow-red-900/20">Guardar Banco</button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* MODAL NUEVA TRANSACCION */}
+      {showTransaccionModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-stone-900/50 backdrop-blur-sm">
+          <div className="bg-white rounded-3xl p-8 w-full max-w-lg shadow-2xl animate-in zoom-in-95">
+            <h2 className="text-2xl font-bold text-stone-900 mb-6">Registrar Transacción</h2>
+            <form onSubmit={handleCrearTransaccion} className="space-y-4">
+              <div className="flex gap-4">
+                <div className="w-1/2">
+                  <label className="block text-sm font-semibold text-stone-700 mb-2">Tipo</label>
+                  <select 
+                    required
+                    value={nuevaTransaccion.tipo}
+                    onChange={e => setNuevaTransaccion({...nuevaTransaccion, tipo: e.target.value})}
+                    className="w-full px-4 py-3 rounded-xl border border-stone-200 focus:border-[#b91c1c] outline-none"
+                  >
+                    <option value="Ingreso">Ingreso</option>
+                    <option value="Egreso">Egreso</option>
+                  </select>
+                </div>
+                <div className="w-1/2">
+                  <label className="block text-sm font-semibold text-stone-700 mb-2">Monto ($)</label>
+                  <input 
+                    type="number" step="0.01" required
+                    value={nuevaTransaccion.monto} onChange={e => setNuevaTransaccion({...nuevaTransaccion, monto: e.target.value})}
+                    className="w-full px-4 py-3 rounded-xl border border-stone-200 focus:border-[#b91c1c] outline-none"
+                  />
+                </div>
+              </div>
+              <div>
+                <label className="block text-sm font-semibold text-stone-700 mb-2">Concepto</label>
+                <input 
+                  type="text" required placeholder="Ej. Pago de luz, Anticipo cliente..."
+                  value={nuevaTransaccion.concepto} onChange={e => setNuevaTransaccion({...nuevaTransaccion, concepto: e.target.value})}
+                  className="w-full px-4 py-3 rounded-xl border border-stone-200 focus:border-[#b91c1c] outline-none"
+                />
+              </div>
+              <div className="flex gap-4">
+                <div className="w-1/2">
+                  <label className="block text-sm font-semibold text-stone-700 mb-2">Banco Afectado</label>
+                  <select 
+                    value={nuevaTransaccion.banco_id}
+                    onChange={e => setNuevaTransaccion({...nuevaTransaccion, banco_id: e.target.value})}
+                    className="w-full px-4 py-3 rounded-xl border border-stone-200 focus:border-[#b91c1c] outline-none"
+                  >
+                    <option value="">-- Efectivo / Ninguno --</option>
+                    {bancos.map(b => (
+                      <option key={b.id} value={b.id}>{b.nombre} (Saldo: ${b.saldo})</option>
+                    ))}
+                  </select>
+                </div>
+                <div className="w-1/2">
+                  <label className="block text-sm font-semibold text-stone-700 mb-2">Fecha</label>
+                  <input 
+                    type="date"
+                    value={nuevaTransaccion.fecha} onChange={e => setNuevaTransaccion({...nuevaTransaccion, fecha: e.target.value})}
+                    className="w-full px-4 py-3 rounded-xl border border-stone-200 focus:border-[#b91c1c] outline-none"
+                  />
+                </div>
+              </div>
+              <div className="flex justify-end gap-3 pt-4">
+                <button type="button" onClick={() => setShowTransaccionModal(false)} className="px-5 py-2.5 rounded-xl font-semibold text-stone-500 hover:bg-stone-100">Cancelar</button>
+                <button type="submit" className="px-5 py-2.5 rounded-xl font-bold bg-[#b91c1c] text-white hover:bg-red-800 shadow-lg shadow-red-900/20">Registrar</button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* MODAL NUEVA COBRANZA (Manual) */}
+      {showCobranzaModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-stone-900/50 backdrop-blur-sm">
+          <div className="bg-white rounded-3xl p-8 w-full max-w-lg shadow-2xl animate-in zoom-in-95">
+            <h2 className="text-2xl font-bold text-stone-900 mb-6">Registrar Cobranza Esperada</h2>
+            <form onSubmit={handleCrearCobranza} className="space-y-4">
+              <div>
+                <label className="block text-sm font-semibold text-stone-700 mb-2">Operación (Venta asociada)</label>
+                <select 
+                  required
+                  value={nuevaCobranza.operacion_id}
+                  onChange={e => setNuevaCobranza({...nuevaCobranza, operacion_id: e.target.value})}
+                  className="w-full px-4 py-3 rounded-xl border border-stone-200 focus:border-[#b91c1c] outline-none"
+                >
+                  <option value="">-- Seleccionar Venta --</option>
+                  {operaciones.map(o => (
+                    <option key={o.id} value={o.id}>{o.lote_codigo} - {o.comprador_nombre} (${o.monto})</option>
+                  ))}
+                </select>
+              </div>
+              <div className="flex gap-4">
+                <div className="w-1/2">
+                  <label className="block text-sm font-semibold text-stone-700 mb-2">Monto a Cobrar ($)</label>
+                  <input 
+                    type="number" step="0.01" required
+                    value={nuevaCobranza.monto_esperado} onChange={e => setNuevaCobranza({...nuevaCobranza, monto_esperado: e.target.value})}
+                    className="w-full px-4 py-3 rounded-xl border border-stone-200 focus:border-[#b91c1c] outline-none"
+                  />
+                </div>
+                <div className="w-1/2">
+                  <label className="block text-sm font-semibold text-stone-700 mb-2">Vencimiento</label>
+                  <input 
+                    type="date" required
+                    value={nuevaCobranza.fecha_vencimiento} onChange={e => setNuevaCobranza({...nuevaCobranza, fecha_vencimiento: e.target.value})}
+                    className="w-full px-4 py-3 rounded-xl border border-stone-200 focus:border-[#b91c1c] outline-none"
+                  />
+                </div>
+              </div>
+              <div>
+                <label className="block text-sm font-semibold text-stone-700 mb-2">Notas (Opcional)</label>
+                <input 
+                  type="text" placeholder="Ej. Pagaré 1 de 12"
+                  value={nuevaCobranza.notas} onChange={e => setNuevaCobranza({...nuevaCobranza, notas: e.target.value})}
+                  className="w-full px-4 py-3 rounded-xl border border-stone-200 focus:border-[#b91c1c] outline-none"
+                />
+              </div>
+              <div className="flex justify-end gap-3 pt-4">
+                <button type="button" onClick={() => setShowCobranzaModal(false)} className="px-5 py-2.5 rounded-xl font-semibold text-stone-500 hover:bg-stone-100">Cancelar</button>
+                <button type="submit" className="px-5 py-2.5 rounded-xl font-bold bg-[#b91c1c] text-white hover:bg-red-800 shadow-lg shadow-red-900/20">Programar Cobro</button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* MODAL PAGAR COBRANZA */}
+      {showPagarCobranzaModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-stone-900/50 backdrop-blur-sm">
+          <div className="bg-white rounded-3xl p-8 w-full max-w-sm shadow-2xl animate-in zoom-in-95">
+            <h2 className="text-xl font-bold text-stone-900 mb-4">Confirmar Recepción de Pago</h2>
+            <p className="text-sm text-stone-500 mb-6">Selecciona en qué banco ingresó el dinero. Si fue en efectivo, déjalo vacío.</p>
+            <form onSubmit={handlePagarCobranza} className="space-y-4">
+              <div>
+                <label className="block text-sm font-semibold text-stone-700 mb-2">Banco de Ingreso</label>
+                <select 
+                  value={cobranzaAPagar.banco_id}
+                  onChange={e => setCobranzaAPagar({...cobranzaAPagar, banco_id: e.target.value})}
+                  className="w-full px-4 py-3 rounded-xl border border-stone-200 focus:border-[#b91c1c] outline-none"
+                >
+                  <option value="">-- Efectivo / Ninguno --</option>
+                  {bancos.map(b => (
+                    <option key={b.id} value={b.id}>{b.nombre}</option>
+                  ))}
+                </select>
+              </div>
+              <div className="flex justify-end gap-3 pt-4">
+                <button type="button" onClick={() => setShowPagarCobranzaModal(false)} className="px-5 py-2.5 rounded-xl font-semibold text-stone-500 hover:bg-stone-100">Cancelar</button>
+                <button type="submit" className="px-5 py-2.5 rounded-xl font-bold bg-emerald-600 text-white hover:bg-emerald-700 shadow-lg shadow-emerald-900/20">Confirmar Pago</button>
               </div>
             </form>
           </div>
