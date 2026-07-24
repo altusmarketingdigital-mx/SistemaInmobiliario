@@ -20,6 +20,10 @@ export default function Admin() {
   const [transacciones, setTransacciones] = useState([]);
   const [cobranza, setCobranza] = useState([]);
   
+  const [empleados, setEmpleados] = useState([]);
+  const [nomina, setNomina] = useState([]);
+  const [configuracion, setConfiguracion] = useState({ company_name: '', company_rfc: '' });
+  
   // Modal states
   const [showProyectoModal, setShowProyectoModal] = useState(false);
   const [nuevoProyecto, setNuevoProyecto] = useState({ nombre: '', ubicacion: '', descripcion: '', logotipo_url: '' });
@@ -58,6 +62,12 @@ export default function Admin() {
   const [showPagarCobranzaModal, setShowPagarCobranzaModal] = useState(false);
   const [cobranzaAPagar, setCobranzaAPagar] = useState({ id: '', banco_id: '' });
   
+  const [showEmpleadoModal, setShowEmpleadoModal] = useState(false);
+  const [nuevoEmpleado, setNuevoEmpleado] = useState({ nombre: '', rfc: '', puesto: '', salario_base: '' });
+
+  const [showNominaModal, setShowNominaModal] = useState(false);
+  const [nuevaNomina, setNuevaNomina] = useState({ empleado_id: '', periodo: '', monto_pagado: '', banco_id: '' });
+  
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -74,6 +84,9 @@ export default function Admin() {
     fetchBancos();
     fetchTransacciones();
     fetchCobranza();
+    fetchEmpleados();
+    fetchNomina();
+    fetchConfiguracion();
   }, []);
 
   useEffect(() => {
@@ -89,6 +102,9 @@ export default function Admin() {
     if (activeTab === 'bancos') fetchBancos();
     if (activeTab === 'transacciones') fetchTransacciones();
     if (activeTab === 'cobranza') fetchCobranza();
+    if (activeTab === 'empleados') fetchEmpleados();
+    if (activeTab === 'nomina') fetchNomina();
+    if (activeTab === 'configuracion') fetchConfiguracion();
   }, [activeTab]);
 
   const fetchLotes = async () => {
@@ -194,6 +210,33 @@ export default function Admin() {
     try {
       const response = await api.get('/admin/cobranza');
       setCobranza(Array.isArray(response.data) ? response.data : []);
+    } catch (error) {
+      handleAuthError(error);
+    }
+  };
+
+  const fetchEmpleados = async () => {
+    try {
+      const response = await api.get('/admin/empleados');
+      setEmpleados(Array.isArray(response.data) ? response.data : []);
+    } catch (error) {
+      handleAuthError(error);
+    }
+  };
+
+  const fetchNomina = async () => {
+    try {
+      const response = await api.get('/admin/nomina');
+      setNomina(Array.isArray(response.data) ? response.data : []);
+    } catch (error) {
+      handleAuthError(error);
+    }
+  };
+
+  const fetchConfiguracion = async () => {
+    try {
+      const response = await api.get('/admin/configuracion');
+      setConfiguracion(response.data || { company_name: '', company_rfc: '' });
     } catch (error) {
       handleAuthError(error);
     }
@@ -403,6 +446,45 @@ export default function Admin() {
     }
   };
 
+  const handleCrearEmpleado = async (e) => {
+    e.preventDefault();
+    try {
+      await api.post('/admin/empleados', nuevoEmpleado);
+      setShowEmpleadoModal(false);
+      setNuevoEmpleado({ nombre: '', rfc: '', puesto: '', salario_base: '' });
+      fetchEmpleados();
+    } catch (error) {
+      console.error(error);
+      alert("Error al crear empleado.");
+    }
+  };
+
+  const handleCrearNomina = async (e) => {
+    e.preventDefault();
+    try {
+      await api.post('/admin/nomina', nuevaNomina);
+      setShowNominaModal(false);
+      setNuevaNomina({ empleado_id: '', periodo: '', monto_pagado: '', banco_id: '' });
+      fetchNomina();
+      fetchTransacciones();
+      fetchBancos();
+    } catch (error) {
+      console.error(error);
+      alert("Error al registrar nómina.");
+    }
+  };
+
+  const handleGuardarConfiguracion = async (clave, valor) => {
+    try {
+      await api.put(`/admin/configuracion/${clave}`, { valor });
+      fetchConfiguracion();
+      alert("Configuración guardada exitosamente.");
+    } catch (error) {
+      console.error(error);
+      alert("Error al guardar configuración.");
+    }
+  };
+
   const handleLogout = () => {
     localStorage.removeItem('token');
     localStorage.removeItem('user');
@@ -523,6 +605,34 @@ export default function Admin() {
               Cobranza
             </button>
           </div>
+
+          <div className="pt-4 mt-4 border-t border-stone-800">
+            <h3 className="px-4 text-xs font-bold text-stone-500 uppercase tracking-wider mb-2">Empresa</h3>
+            
+            <button 
+              onClick={() => setActiveTab('empleados')}
+              className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-semibold transition-all ${activeTab === 'empleados' ? 'bg-[#b91c1c] text-white shadow-lg shadow-red-900/20' : 'text-stone-400 hover:bg-stone-800 hover:text-white'}`}
+            >
+              <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" /></svg>
+              Empleados Base
+            </button>
+
+            <button 
+              onClick={() => setActiveTab('nomina')}
+              className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-semibold transition-all ${activeTab === 'nomina' ? 'bg-[#b91c1c] text-white shadow-lg shadow-red-900/20' : 'text-stone-400 hover:bg-stone-800 hover:text-white'}`}
+            >
+              <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" /></svg>
+              Nómina
+            </button>
+
+            <button 
+              onClick={() => setActiveTab('configuracion')}
+              className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-semibold transition-all ${activeTab === 'configuracion' ? 'bg-[#b91c1c] text-white shadow-lg shadow-red-900/20' : 'text-stone-400 hover:bg-stone-800 hover:text-white'}`}
+            >
+              <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /></svg>
+              Configuración
+            </button>
+          </div>
         </nav>
 
         <div className="p-4 border-t border-stone-800">
@@ -596,6 +706,16 @@ export default function Admin() {
             {activeTab === 'cobranza' && (
               <button onClick={() => setShowCobranzaModal(true)} className="bg-[#b91c1c] text-white px-5 py-2.5 rounded-xl font-bold text-sm shadow-lg shadow-red-900/20 hover:-translate-y-0.5 transition-transform">
                 + Registrar Cobranza
+              </button>
+            )}
+            {activeTab === 'empleados' && (
+              <button onClick={() => setShowEmpleadoModal(true)} className="bg-[#b91c1c] text-white px-5 py-2.5 rounded-xl font-bold text-sm shadow-lg shadow-red-900/20 hover:-translate-y-0.5 transition-transform">
+                + Registrar Empleado
+              </button>
+            )}
+            {activeTab === 'nomina' && (
+              <button onClick={() => setShowNominaModal(true)} className="bg-[#b91c1c] text-white px-5 py-2.5 rounded-xl font-bold text-sm shadow-lg shadow-red-900/20 hover:-translate-y-0.5 transition-transform">
+                + Pagar Nómina
               </button>
             )}
           </header>
@@ -1025,6 +1145,106 @@ export default function Admin() {
                   )}
                 </tbody>
               </table>
+            </div>
+          )}
+
+          )}
+
+          {activeTab === 'empleados' && (
+            <div className="bg-white rounded-2xl shadow-sm border border-stone-200 overflow-hidden">
+              <table className="w-full text-left">
+                <thead className="bg-stone-50 border-b border-stone-200 text-stone-600">
+                  <tr>
+                    <th className="p-5 font-semibold text-sm">Empleado / RFC</th>
+                    <th className="p-5 font-semibold text-sm">Puesto</th>
+                    <th className="p-5 font-semibold text-sm">Ingreso</th>
+                    <th className="p-5 font-semibold text-sm">Salario Base</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-stone-100">
+                  {empleados.length === 0 ? (
+                    <tr><td colSpan="4" className="p-8 text-center text-stone-500">No hay empleados registrados.</td></tr>
+                  ) : (
+                    empleados.map(e => (
+                      <tr key={e.id} className="hover:bg-stone-50 transition-colors group">
+                        <td className="p-5">
+                          <div className="font-bold text-stone-900">{e.nombre}</div>
+                          <div className="text-xs text-stone-500">{e.rfc || 'Sin RFC'}</div>
+                        </td>
+                        <td className="p-5 text-stone-600">{e.puesto}</td>
+                        <td className="p-5 text-stone-600">{new Date(e.fecha_ingreso).toLocaleDateString()}</td>
+                        <td className="p-5 font-bold text-emerald-600">${e.salario_base}</td>
+                      </tr>
+                    ))
+                  )}
+                </tbody>
+              </table>
+            </div>
+          )}
+
+          {activeTab === 'nomina' && (
+            <div className="bg-white rounded-2xl shadow-sm border border-stone-200 overflow-hidden">
+              <table className="w-full text-left">
+                <thead className="bg-stone-50 border-b border-stone-200 text-stone-600">
+                  <tr>
+                    <th className="p-5 font-semibold text-sm">Periodo</th>
+                    <th className="p-5 font-semibold text-sm">Empleado</th>
+                    <th className="p-5 font-semibold text-sm">Fecha Pago</th>
+                    <th className="p-5 font-semibold text-sm">Banco / Origen</th>
+                    <th className="p-5 font-semibold text-sm">Monto ($)</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-stone-100">
+                  {nomina.length === 0 ? (
+                    <tr><td colSpan="5" className="p-8 text-center text-stone-500">No hay registros de nómina.</td></tr>
+                  ) : (
+                    nomina.map(n => (
+                      <tr key={n.id} className="hover:bg-stone-50 transition-colors group">
+                        <td className="p-5 font-bold text-stone-900">{n.periodo}</td>
+                        <td className="p-5">
+                          <div className="font-bold text-stone-900">{n.empleado_nombre}</div>
+                          <div className="text-xs text-stone-500">{n.puesto}</div>
+                        </td>
+                        <td className="p-5 text-stone-600">{new Date(n.fecha_pago).toLocaleDateString()}</td>
+                        <td className="p-5 text-stone-600">{n.banco_nombre || 'Efectivo / Ninguno'}</td>
+                        <td className="p-5 font-bold text-emerald-600">${n.monto_pagado}</td>
+                      </tr>
+                    ))
+                  )}
+                </tbody>
+              </table>
+            </div>
+          )}
+
+          {activeTab === 'configuracion' && (
+            <div className="bg-white rounded-2xl shadow-sm border border-stone-200 p-8 max-w-2xl mx-auto mt-10">
+              <h2 className="text-2xl font-bold text-stone-900 mb-6">Ajustes Globales</h2>
+              <div className="space-y-6">
+                <div>
+                  <label className="block text-sm font-semibold text-stone-700 mb-2">Nombre de la Empresa</label>
+                  <div className="flex gap-4">
+                    <input 
+                      type="text" 
+                      value={configuracion.company_name || ''} 
+                      onChange={e => setConfiguracion({...configuracion, company_name: e.target.value})}
+                      className="flex-1 px-4 py-3 rounded-xl border border-stone-200 focus:border-[#b91c1c] outline-none"
+                    />
+                    <button onClick={() => handleGuardarConfiguracion('company_name', configuracion.company_name)} className="px-5 py-3 rounded-xl font-bold bg-[#b91c1c] text-white hover:bg-red-800 transition-colors">Guardar</button>
+                  </div>
+                </div>
+                <div>
+                  <label className="block text-sm font-semibold text-stone-700 mb-2">RFC de la Empresa</label>
+                  <div className="flex gap-4">
+                    <input 
+                      type="text" 
+                      value={configuracion.company_rfc || ''} 
+                      onChange={e => setConfiguracion({...configuracion, company_rfc: e.target.value})}
+                      className="flex-1 px-4 py-3 rounded-xl border border-stone-200 focus:border-[#b91c1c] outline-none"
+                    />
+                    <button onClick={() => handleGuardarConfiguracion('company_rfc', configuracion.company_rfc)} className="px-5 py-3 rounded-xl font-bold bg-[#b91c1c] text-white hover:bg-red-800 transition-colors">Guardar</button>
+                  </div>
+                </div>
+              </div>
             </div>
           )}
 
@@ -1685,6 +1905,122 @@ export default function Admin() {
               <div className="flex justify-end gap-3 pt-4">
                 <button type="button" onClick={() => setShowPagarCobranzaModal(false)} className="px-5 py-2.5 rounded-xl font-semibold text-stone-500 hover:bg-stone-100">Cancelar</button>
                 <button type="submit" className="px-5 py-2.5 rounded-xl font-bold bg-emerald-600 text-white hover:bg-emerald-700 shadow-lg shadow-emerald-900/20">Confirmar Pago</button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* MODAL NUEVO EMPLEADO */}
+      {showEmpleadoModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-stone-900/50 backdrop-blur-sm">
+          <div className="bg-white rounded-3xl p-8 w-full max-w-lg shadow-2xl animate-in zoom-in-95">
+            <h2 className="text-2xl font-bold text-stone-900 mb-6">Registrar Empleado (Sueldo Base)</h2>
+            <form onSubmit={handleCrearEmpleado} className="space-y-4">
+              <div>
+                <label className="block text-sm font-semibold text-stone-700 mb-2">Nombre Completo</label>
+                <input 
+                  type="text" required
+                  value={nuevoEmpleado.nombre} onChange={e => setNuevoEmpleado({...nuevoEmpleado, nombre: e.target.value})}
+                  className="w-full px-4 py-3 rounded-xl border border-stone-200 focus:border-[#b91c1c] outline-none"
+                />
+              </div>
+              <div className="flex gap-4">
+                <div className="w-1/2">
+                  <label className="block text-sm font-semibold text-stone-700 mb-2">RFC</label>
+                  <input 
+                    type="text"
+                    value={nuevoEmpleado.rfc} onChange={e => setNuevoEmpleado({...nuevoEmpleado, rfc: e.target.value})}
+                    className="w-full px-4 py-3 rounded-xl border border-stone-200 focus:border-[#b91c1c] outline-none"
+                  />
+                </div>
+                <div className="w-1/2">
+                  <label className="block text-sm font-semibold text-stone-700 mb-2">Puesto</label>
+                  <input 
+                    type="text" required
+                    value={nuevoEmpleado.puesto} onChange={e => setNuevoEmpleado({...nuevoEmpleado, puesto: e.target.value})}
+                    className="w-full px-4 py-3 rounded-xl border border-stone-200 focus:border-[#b91c1c] outline-none"
+                  />
+                </div>
+              </div>
+              <div>
+                <label className="block text-sm font-semibold text-stone-700 mb-2">Salario Base Mensual ($)</label>
+                <input 
+                  type="number" step="0.01" required
+                  value={nuevoEmpleado.salario_base} onChange={e => setNuevoEmpleado({...nuevoEmpleado, salario_base: e.target.value})}
+                  className="w-full px-4 py-3 rounded-xl border border-stone-200 focus:border-[#b91c1c] outline-none"
+                />
+              </div>
+              <div className="flex justify-end gap-3 pt-4">
+                <button type="button" onClick={() => setShowEmpleadoModal(false)} className="px-5 py-2.5 rounded-xl font-semibold text-stone-500 hover:bg-stone-100">Cancelar</button>
+                <button type="submit" className="px-5 py-2.5 rounded-xl font-bold bg-[#b91c1c] text-white hover:bg-red-800 shadow-lg shadow-red-900/20">Guardar Empleado</button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* MODAL PAGAR NÓMINA */}
+      {showNominaModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-stone-900/50 backdrop-blur-sm">
+          <div className="bg-white rounded-3xl p-8 w-full max-w-lg shadow-2xl animate-in zoom-in-95">
+            <h2 className="text-2xl font-bold text-stone-900 mb-6">Generar Pago de Nómina</h2>
+            <form onSubmit={handleCrearNomina} className="space-y-4">
+              <div>
+                <label className="block text-sm font-semibold text-stone-700 mb-2">Empleado</label>
+                <select 
+                  required
+                  value={nuevaNomina.empleado_id}
+                  onChange={e => {
+                    const emp = empleados.find(x => x.id == e.target.value);
+                    setNuevaNomina({
+                      ...nuevaNomina, 
+                      empleado_id: e.target.value,
+                      monto_pagado: emp ? emp.salario_base : ''
+                    });
+                  }}
+                  className="w-full px-4 py-3 rounded-xl border border-stone-200 focus:border-[#b91c1c] outline-none"
+                >
+                  <option value="">-- Seleccionar Empleado --</option>
+                  {empleados.map(emp => (
+                    <option key={emp.id} value={emp.id}>{emp.nombre} - {emp.puesto}</option>
+                  ))}
+                </select>
+              </div>
+              <div className="flex gap-4">
+                <div className="w-1/2">
+                  <label className="block text-sm font-semibold text-stone-700 mb-2">Periodo (Ej. Quincena 15)</label>
+                  <input 
+                    type="text" required
+                    value={nuevaNomina.periodo} onChange={e => setNuevaNomina({...nuevaNomina, periodo: e.target.value})}
+                    className="w-full px-4 py-3 rounded-xl border border-stone-200 focus:border-[#b91c1c] outline-none"
+                  />
+                </div>
+                <div className="w-1/2">
+                  <label className="block text-sm font-semibold text-stone-700 mb-2">Monto a Pagar ($)</label>
+                  <input 
+                    type="number" step="0.01" required
+                    value={nuevaNomina.monto_pagado} onChange={e => setNuevaNomina({...nuevaNomina, monto_pagado: e.target.value})}
+                    className="w-full px-4 py-3 rounded-xl border border-stone-200 focus:border-[#b91c1c] outline-none"
+                  />
+                </div>
+              </div>
+              <div>
+                <label className="block text-sm font-semibold text-stone-700 mb-2">Banco de Origen (De donde sale el dinero)</label>
+                <select 
+                  value={nuevaNomina.banco_id}
+                  onChange={e => setNuevaNomina({...nuevaNomina, banco_id: e.target.value})}
+                  className="w-full px-4 py-3 rounded-xl border border-stone-200 focus:border-[#b91c1c] outline-none"
+                >
+                  <option value="">-- Efectivo / Caja Fuerte --</option>
+                  {bancos.map(b => (
+                    <option key={b.id} value={b.id}>{b.nombre} (Saldo actual: ${b.saldo})</option>
+                  ))}
+                </select>
+              </div>
+              <div className="flex justify-end gap-3 pt-4">
+                <button type="button" onClick={() => setShowNominaModal(false)} className="px-5 py-2.5 rounded-xl font-semibold text-stone-500 hover:bg-stone-100">Cancelar</button>
+                <button type="submit" className="px-5 py-2.5 rounded-xl font-bold bg-[#b91c1c] text-white hover:bg-red-800 shadow-lg shadow-red-900/20">Ejecutar Pago</button>
               </div>
             </form>
           </div>
