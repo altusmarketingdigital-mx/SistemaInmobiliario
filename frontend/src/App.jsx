@@ -38,9 +38,9 @@ function App() {
               <Link to="/admin" className={`font-semibold text-sm transition-colors ${location.pathname === '/admin' ? 'text-red-600' : 'text-stone-500 hover:text-stone-900'}`}>
                 Backoffice
               </Link>
-              <button className="px-6 py-2.5 rounded-full bg-black text-white font-semibold text-sm hover:bg-neutral-800 transition-all shadow-lg hover:shadow-red-900/20 active:scale-95">
+              <a href="https://wa.me/523312345678" target="_blank" rel="noopener noreferrer" className="px-6 py-2.5 rounded-full bg-black text-white font-semibold text-sm hover:bg-neutral-800 transition-all shadow-lg hover:shadow-red-900/20 active:scale-95">
                 Contacto
-              </button>
+              </a>
             </div>
           </div>
         </nav>

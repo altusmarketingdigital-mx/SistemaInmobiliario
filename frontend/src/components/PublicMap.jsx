@@ -155,9 +155,9 @@ export default function PublicMap() {
               </div>
             </div>
             
-            <button className="w-full bg-red-600 text-white font-bold text-lg py-4 rounded-2xl transition-all hover:bg-red-700 active:scale-95 shadow-[0_10px_20px_-10px_rgba(220,38,38,0.5)]">
+            <a href={`https://wa.me/523312345678?text=Hola,%20me%20interesa%20el%20lote%20${selectedLote.codigo}%20de%20${selectedLote.superficie}m2%20que%20vi%20en%20el%20plano.`} target="_blank" rel="noopener noreferrer" className="flex items-center justify-center w-full bg-red-600 text-white font-bold text-lg py-4 rounded-2xl transition-all hover:bg-red-700 active:scale-95 shadow-[0_10px_20px_-10px_rgba(220,38,38,0.5)]">
               Contactar Asesor
-            </button>
+            </a>
           </div>
         </div>
       )}
