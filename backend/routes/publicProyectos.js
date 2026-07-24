@@ -28,10 +28,10 @@ router.get('/:id/plano', async (req, res) => {
 
     let lotes = [];
     if (plano) {
-      // 3. Obtener estado de los lotes asociados al proyecto por el código
+      // 3. Obtener estado de los lotes asociados al plano
       const lotesRes = await db.query(
-        'SELECT id, codigo, superficie_m2 AS superficie, precio_m2, estado, titulo, descripcion FROM lotes WHERE codigo LIKE $1', 
-        [`LOTE-P${id}-%`]
+        'SELECT id, codigo, superficie_m2 AS superficie, precio_m2, estado, titulo, descripcion FROM lotes WHERE plano_id = $1', 
+        [plano.id]
       );
       lotes = lotesRes.rows;
     }
