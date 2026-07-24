@@ -136,6 +136,46 @@ export default function ProjectList() {
         )}
       </div>
 
+      {/* CONTACT FORM SECTION */}
+      <div className="bg-stone-50 py-24 relative z-10 border-t border-stone-200" id="contacto">
+        <div className="max-w-4xl mx-auto px-6">
+          <div className="text-center mb-12">
+            <h2 className="text-4xl md:text-5xl font-['Outfit'] font-black text-stone-900 tracking-tight mb-4">
+              ¿Listo para invertir?
+            </h2>
+            <p className="text-stone-500 text-lg font-medium">
+              Déjanos tus datos y un asesor especializado se pondrá en contacto contigo a la brevedad.
+            </p>
+          </div>
+          
+          <div className="bg-white rounded-3xl shadow-xl shadow-stone-200/50 p-8 md:p-12 border border-stone-100">
+            <form className="space-y-6" onSubmit={(e) => { e.preventDefault(); alert("¡Mensaje enviado con éxito! Un asesor te contactará pronto."); }}>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="space-y-2">
+                  <label className="text-sm font-bold text-stone-700">Nombre Completo</label>
+                  <input type="text" placeholder="Ej. Juan Pérez" className="w-full bg-stone-50 border border-stone-200 rounded-xl px-4 py-3 text-stone-700 focus:outline-none focus:ring-2 focus:ring-red-500 focus:bg-white transition-all" required />
+                </div>
+                <div className="space-y-2">
+                  <label className="text-sm font-bold text-stone-700">Teléfono (WhatsApp)</label>
+                  <input type="tel" placeholder="Ej. 33 1234 5678" className="w-full bg-stone-50 border border-stone-200 rounded-xl px-4 py-3 text-stone-700 focus:outline-none focus:ring-2 focus:ring-red-500 focus:bg-white transition-all" required />
+                </div>
+              </div>
+              <div className="space-y-2">
+                <label className="text-sm font-bold text-stone-700">Correo Electrónico</label>
+                <input type="email" placeholder="tu@correo.com" className="w-full bg-stone-50 border border-stone-200 rounded-xl px-4 py-3 text-stone-700 focus:outline-none focus:ring-2 focus:ring-red-500 focus:bg-white transition-all" required />
+              </div>
+              <div className="space-y-2">
+                <label className="text-sm font-bold text-stone-700">Mensaje (Opcional)</label>
+                <textarea rows="4" placeholder="Me interesa saber más sobre..." className="w-full bg-stone-50 border border-stone-200 rounded-xl px-4 py-3 text-stone-700 focus:outline-none focus:ring-2 focus:ring-red-500 focus:bg-white transition-all resize-none"></textarea>
+              </div>
+              <button type="submit" className="w-full bg-red-600 text-white font-bold text-lg py-4 rounded-xl hover:bg-red-700 active:scale-95 transition-all shadow-lg shadow-red-600/30">
+                Enviar Mensaje
+              </button>
+            </form>
+          </div>
+        </div>
+      </div>
+
       {/* PREMIUM FOOTER */}
       <footer className="bg-white border-t border-stone-200 mt-20 pt-16 pb-8">
         <div className="max-w-[1400px] mx-auto px-6 lg:px-12">
