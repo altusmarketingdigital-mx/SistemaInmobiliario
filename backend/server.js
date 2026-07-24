@@ -83,13 +83,26 @@ app.get('/api/setup-db', async (req, res) => {
   }
 });
 
-app.use('/api/auth', require('./routes/auth'));
-app.use('/api/proyectos', require('./routes/publicProyectos'));
+// Importar rutas
+const authRoutes = require('./routes/auth');
+const proyectosRoutes = require('./routes/proyectos');
+const lotesRoutes = require('./routes/lotes');
+const planosRoutes = require('./routes/planos');
+const publicProyectosRoutes = require('./routes/publicProyectos');
+const compradoresRoutes = require('./routes/compradores');
+const propietariosRoutes = require('./routes/propietarios');
+const operacionesRoutes = require('./routes/operaciones');
 
-// Protected Admin Routes
-app.use('/api/admin/proyectos', authMiddleware, require('./routes/proyectos'));
-app.use('/api/admin/planos', authMiddleware, require('./routes/planos'));
-app.use('/api/admin/lotes', authMiddleware, require('./routes/lotes'));
+// Uso de rutas (Protegidas por authMiddleware excepto publicProyectos)
+app.use('/api/auth', authRoutes);
+app.use('/api/proyectos', publicProyectosRoutes); // Rutas públicas para el frontend sin login
+
+app.use('/api/admin/proyectos', authMiddleware, proyectosRoutes);
+app.use('/api/admin/lotes', authMiddleware, lotesRoutes);
+app.use('/api/admin/planos', authMiddleware, planosRoutes);
+app.use('/api/admin/compradores', authMiddleware, compradoresRoutes);
+app.use('/api/admin/propietarios', authMiddleware, propietariosRoutes);
+app.use('/api/admin/operaciones', authMiddleware, operacionesRoutes);
 
 const PORT = process.env.PORT || 5000;
 if (process.env.NODE_ENV !== 'production' && require.main === module) {

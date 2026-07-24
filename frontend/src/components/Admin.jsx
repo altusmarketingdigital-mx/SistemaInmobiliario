@@ -8,6 +8,9 @@ export default function Admin() {
   const [lotes, setLotes] = useState([]);
   const [proyectos, setProyectos] = useState([]);
   const [planos, setPlanos] = useState([]);
+  const [compradores, setCompradores] = useState([]);
+  const [propietarios, setPropietarios] = useState([]);
+  const [operaciones, setOperaciones] = useState([]);
   
   // Modal states
   const [showProyectoModal, setShowProyectoModal] = useState(false);
@@ -18,7 +21,16 @@ export default function Admin() {
   const [isUploading, setIsUploading] = useState(false);
   
   const [showLoteModal, setShowLoteModal] = useState(false);
-  const [nuevoLote, setNuevoLote] = useState({ plano_id: '', codigo: '', superficie_m2: '', precio_m2: '' });
+  const [nuevoLote, setNuevoLote] = useState({ plano_id: '', codigo: '', superficie_m2: '', precio_m2: '', tipo_inmueble: 'Terreno', operacion_tipo: 'Venta', propietario_id: '' });
+
+  const [showCompradorModal, setShowCompradorModal] = useState(false);
+  const [nuevoComprador, setNuevoComprador] = useState({ nombre: '', telefono: '', email: '', direccion: '', rfc: '' });
+
+  const [showPropietarioModal, setShowPropietarioModal] = useState(false);
+  const [nuevoPropietario, setNuevoPropietario] = useState({ nombre: '', telefono: '', email: '', direccion: '', rfc: '' });
+
+  const [showOperacionModal, setShowOperacionModal] = useState(false);
+  const [nuevaOperacion, setNuevaOperacion] = useState({ lote_id: '', comprador_id: '', tipo_operacion: 'Venta', monto: '', notas: '' });
   
   const navigate = useNavigate();
 
@@ -27,12 +39,18 @@ export default function Admin() {
     fetchProyectos();
     fetchPlanos();
     fetchLotes();
+    fetchCompradores();
+    fetchPropietarios();
+    fetchOperaciones();
   }, []);
 
   useEffect(() => {
     if (activeTab === 'lotes') fetchLotes();
     if (activeTab === 'proyectos') fetchProyectos();
     if (activeTab === 'planos') fetchPlanos();
+    if (activeTab === 'compradores') fetchCompradores();
+    if (activeTab === 'propietarios') fetchPropietarios();
+    if (activeTab === 'operaciones') fetchOperaciones();
   }, [activeTab]);
 
   const fetchLotes = async () => {
@@ -57,6 +75,33 @@ export default function Admin() {
     try {
       const response = await api.get('/admin/planos');
       setPlanos(Array.isArray(response.data) ? response.data : []);
+    } catch (error) {
+      handleAuthError(error);
+    }
+  };
+
+  const fetchCompradores = async () => {
+    try {
+      const response = await api.get('/admin/compradores');
+      setCompradores(Array.isArray(response.data) ? response.data : []);
+    } catch (error) {
+      handleAuthError(error);
+    }
+  };
+
+  const fetchPropietarios = async () => {
+    try {
+      const response = await api.get('/admin/propietarios');
+      setPropietarios(Array.isArray(response.data) ? response.data : []);
+    } catch (error) {
+      handleAuthError(error);
+    }
+  };
+
+  const fetchOperaciones = async () => {
+    try {
+      const response = await api.get('/admin/operaciones');
+      setOperaciones(Array.isArray(response.data) ? response.data : []);
     } catch (error) {
       handleAuthError(error);
     }
@@ -125,11 +170,51 @@ export default function Admin() {
     try {
       await api.post('/admin/lotes', nuevoLote);
       setShowLoteModal(false);
-      setNuevoLote({ plano_id: '', codigo: '', superficie_m2: '', precio_m2: '' });
+      setNuevoLote({ plano_id: '', codigo: '', superficie_m2: '', precio_m2: '', tipo_inmueble: 'Terreno', operacion_tipo: 'Venta', propietario_id: '' });
       fetchLotes();
     } catch (error) {
       console.error("Error creating lote", error);
       alert(error.response?.data?.error || "Error al crear el lote. Revisa la consola.");
+    }
+  };
+
+  const handleCrearComprador = async (e) => {
+    e.preventDefault();
+    try {
+      await api.post('/admin/compradores', nuevoComprador);
+      setShowCompradorModal(false);
+      setNuevoComprador({ nombre: '', telefono: '', email: '', direccion: '', rfc: '' });
+      fetchCompradores();
+    } catch (error) {
+      console.error(error);
+      alert("Error al crear comprador.");
+    }
+  };
+
+  const handleCrearPropietario = async (e) => {
+    e.preventDefault();
+    try {
+      await api.post('/admin/propietarios', nuevoPropietario);
+      setShowPropietarioModal(false);
+      setNuevoPropietario({ nombre: '', telefono: '', email: '', direccion: '', rfc: '' });
+      fetchPropietarios();
+    } catch (error) {
+      console.error(error);
+      alert("Error al crear propietario.");
+    }
+  };
+
+  const handleCrearOperacion = async (e) => {
+    e.preventDefault();
+    try {
+      await api.post('/admin/operaciones', nuevaOperacion);
+      setShowOperacionModal(false);
+      setNuevaOperacion({ lote_id: '', comprador_id: '', tipo_operacion: 'Venta', monto: '', notas: '' });
+      fetchOperaciones();
+      fetchLotes(); // Refresh lotes since their status might change
+    } catch (error) {
+      console.error(error);
+      alert(error.response?.data?.error || "Error al crear operacion.");
     }
   };
 
@@ -177,6 +262,30 @@ export default function Admin() {
             <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" /></svg>
             Inventario / Lotes
           </button>
+          
+          <button 
+            onClick={() => setActiveTab('compradores')}
+            className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-semibold transition-all ${activeTab === 'compradores' ? 'bg-[#b91c1c] text-white shadow-lg shadow-red-900/20' : 'text-stone-400 hover:bg-stone-800 hover:text-white'}`}
+          >
+            <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" /></svg>
+            Compradores
+          </button>
+
+          <button 
+            onClick={() => setActiveTab('propietarios')}
+            className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-semibold transition-all ${activeTab === 'propietarios' ? 'bg-[#b91c1c] text-white shadow-lg shadow-red-900/20' : 'text-stone-400 hover:bg-stone-800 hover:text-white'}`}
+          >
+            <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" /></svg>
+            Propietarios
+          </button>
+
+          <button 
+            onClick={() => setActiveTab('operaciones')}
+            className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-semibold transition-all ${activeTab === 'operaciones' ? 'bg-[#b91c1c] text-white shadow-lg shadow-red-900/20' : 'text-stone-400 hover:bg-stone-800 hover:text-white'}`}
+          >
+            <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01" /></svg>
+            Operaciones
+          </button>
         </nav>
 
         <div className="p-4 border-t border-stone-800">
@@ -209,7 +318,22 @@ export default function Admin() {
             )}
             {activeTab === 'lotes' && (
               <button onClick={() => setShowLoteModal(true)} className="bg-[#b91c1c] text-white px-5 py-2.5 rounded-xl font-bold text-sm shadow-lg shadow-red-900/20 hover:-translate-y-0.5 transition-transform">
-                + Nuevo Lote
+                + Nuevo Inmueble
+              </button>
+            )}
+            {activeTab === 'compradores' && (
+              <button onClick={() => setShowCompradorModal(true)} className="bg-[#b91c1c] text-white px-5 py-2.5 rounded-xl font-bold text-sm shadow-lg shadow-red-900/20 hover:-translate-y-0.5 transition-transform">
+                + Nuevo Comprador
+              </button>
+            )}
+            {activeTab === 'propietarios' && (
+              <button onClick={() => setShowPropietarioModal(true)} className="bg-[#b91c1c] text-white px-5 py-2.5 rounded-xl font-bold text-sm shadow-lg shadow-red-900/20 hover:-translate-y-0.5 transition-transform">
+                + Nuevo Propietario
+              </button>
+            )}
+            {activeTab === 'operaciones' && (
+              <button onClick={() => setShowOperacionModal(true)} className="bg-[#b91c1c] text-white px-5 py-2.5 rounded-xl font-bold text-sm shadow-lg shadow-red-900/20 hover:-translate-y-0.5 transition-transform">
+                + Registrar Operación
               </button>
             )}
           </header>
@@ -309,6 +433,99 @@ export default function Admin() {
                             <option value="Vendido">Vendido</option>
                             <option value="Bloqueado">Bloqueado</option>
                           </select>
+                        </td>
+                      </tr>
+                    ))
+                  )}
+                </tbody>
+              </table>
+            </div>
+          )}
+
+          {activeTab === 'compradores' && (
+            <div className="bg-white rounded-2xl shadow-sm border border-stone-200 overflow-hidden">
+              <table className="w-full text-left">
+                <thead className="bg-stone-50 border-b border-stone-200 text-stone-600">
+                  <tr>
+                    <th className="p-5 font-semibold text-sm">Nombre</th>
+                    <th className="p-5 font-semibold text-sm">Teléfono</th>
+                    <th className="p-5 font-semibold text-sm">Email</th>
+                    <th className="p-5 font-semibold text-sm">RFC</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-stone-100">
+                  {compradores.length === 0 ? (
+                    <tr><td colSpan="4" className="p-8 text-center text-stone-500">No hay compradores registrados.</td></tr>
+                  ) : (
+                    compradores.map(c => (
+                      <tr key={c.id} className="hover:bg-stone-50 transition-colors group">
+                        <td className="p-5 font-bold text-stone-900">{c.nombre}</td>
+                        <td className="p-5 text-stone-600">{c.telefono}</td>
+                        <td className="p-5 text-stone-600">{c.email}</td>
+                        <td className="p-5 text-stone-600">{c.rfc}</td>
+                      </tr>
+                    ))
+                  )}
+                </tbody>
+              </table>
+            </div>
+          )}
+
+          {activeTab === 'propietarios' && (
+            <div className="bg-white rounded-2xl shadow-sm border border-stone-200 overflow-hidden">
+              <table className="w-full text-left">
+                <thead className="bg-stone-50 border-b border-stone-200 text-stone-600">
+                  <tr>
+                    <th className="p-5 font-semibold text-sm">Nombre</th>
+                    <th className="p-5 font-semibold text-sm">Teléfono</th>
+                    <th className="p-5 font-semibold text-sm">Email</th>
+                    <th className="p-5 font-semibold text-sm">Dirección</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-stone-100">
+                  {propietarios.length === 0 ? (
+                    <tr><td colSpan="4" className="p-8 text-center text-stone-500">No hay propietarios registrados.</td></tr>
+                  ) : (
+                    propietarios.map(p => (
+                      <tr key={p.id} className="hover:bg-stone-50 transition-colors group">
+                        <td className="p-5 font-bold text-stone-900">{p.nombre}</td>
+                        <td className="p-5 text-stone-600">{p.telefono}</td>
+                        <td className="p-5 text-stone-600">{p.email}</td>
+                        <td className="p-5 text-stone-600">{p.direccion}</td>
+                      </tr>
+                    ))
+                  )}
+                </tbody>
+              </table>
+            </div>
+          )}
+
+          {activeTab === 'operaciones' && (
+            <div className="bg-white rounded-2xl shadow-sm border border-stone-200 overflow-hidden">
+              <table className="w-full text-left">
+                <thead className="bg-stone-50 border-b border-stone-200 text-stone-600">
+                  <tr>
+                    <th className="p-5 font-semibold text-sm">Lote</th>
+                    <th className="p-5 font-semibold text-sm">Comprador</th>
+                    <th className="p-5 font-semibold text-sm">Tipo</th>
+                    <th className="p-5 font-semibold text-sm">Monto</th>
+                    <th className="p-5 font-semibold text-sm">Estado</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-stone-100">
+                  {operaciones.length === 0 ? (
+                    <tr><td colSpan="5" className="p-8 text-center text-stone-500">No hay operaciones registradas.</td></tr>
+                  ) : (
+                    operaciones.map(o => (
+                      <tr key={o.id} className="hover:bg-stone-50 transition-colors group">
+                        <td className="p-5 font-bold text-stone-900">{o.lote_codigo}</td>
+                        <td className="p-5 text-stone-600">{o.comprador_nombre}</td>
+                        <td className="p-5 text-stone-600">
+                          <span className="px-2 py-1 rounded bg-stone-100 text-xs font-bold uppercase">{o.tipo_operacion}</span>
+                        </td>
+                        <td className="p-5 font-medium text-emerald-600">${o.monto}</td>
+                        <td className="p-5">
+                          <span className="px-2 py-1 rounded bg-blue-100 text-blue-700 text-xs font-bold uppercase">{o.estado}</span>
                         </td>
                       </tr>
                     ))
@@ -485,6 +702,162 @@ export default function Admin() {
           </div>
         </div>
       )}
+      {/* MODAL NUEVO COMPRADOR */}
+      {showCompradorModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-stone-900/50 backdrop-blur-sm">
+          <div className="bg-white rounded-3xl p-8 w-full max-w-lg shadow-2xl animate-in zoom-in-95">
+            <h2 className="text-2xl font-bold text-stone-900 mb-6">Nuevo Comprador</h2>
+            <form onSubmit={handleCrearComprador} className="space-y-4">
+              <div>
+                <label className="block text-sm font-semibold text-stone-700 mb-2">Nombre Completo</label>
+                <input 
+                  type="text" required
+                  value={nuevoComprador.nombre} onChange={e => setNuevoComprador({...nuevoComprador, nombre: e.target.value})}
+                  className="w-full px-4 py-3 rounded-xl border border-stone-200 focus:border-[#b91c1c] outline-none"
+                />
+              </div>
+              <div className="flex gap-4">
+                <div className="w-1/2">
+                  <label className="block text-sm font-semibold text-stone-700 mb-2">Teléfono</label>
+                  <input 
+                    type="text"
+                    value={nuevoComprador.telefono} onChange={e => setNuevoComprador({...nuevoComprador, telefono: e.target.value})}
+                    className="w-full px-4 py-3 rounded-xl border border-stone-200 focus:border-[#b91c1c] outline-none"
+                  />
+                </div>
+                <div className="w-1/2">
+                  <label className="block text-sm font-semibold text-stone-700 mb-2">Email</label>
+                  <input 
+                    type="email"
+                    value={nuevoComprador.email} onChange={e => setNuevoComprador({...nuevoComprador, email: e.target.value})}
+                    className="w-full px-4 py-3 rounded-xl border border-stone-200 focus:border-[#b91c1c] outline-none"
+                  />
+                </div>
+              </div>
+              <div>
+                <label className="block text-sm font-semibold text-stone-700 mb-2">RFC</label>
+                <input 
+                  type="text"
+                  value={nuevoComprador.rfc} onChange={e => setNuevoComprador({...nuevoComprador, rfc: e.target.value})}
+                  className="w-full px-4 py-3 rounded-xl border border-stone-200 focus:border-[#b91c1c] outline-none"
+                />
+              </div>
+              <div className="flex justify-end gap-3 pt-4">
+                <button type="button" onClick={() => setShowCompradorModal(false)} className="px-5 py-2.5 rounded-xl font-semibold text-stone-500 hover:bg-stone-100">Cancelar</button>
+                <button type="submit" className="px-5 py-2.5 rounded-xl font-bold bg-[#b91c1c] text-white hover:bg-red-800 shadow-lg shadow-red-900/20">Crear</button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* MODAL NUEVO PROPIETARIO */}
+      {showPropietarioModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-stone-900/50 backdrop-blur-sm">
+          <div className="bg-white rounded-3xl p-8 w-full max-w-lg shadow-2xl animate-in zoom-in-95">
+            <h2 className="text-2xl font-bold text-stone-900 mb-6">Nuevo Propietario</h2>
+            <form onSubmit={handleCrearPropietario} className="space-y-4">
+              <div>
+                <label className="block text-sm font-semibold text-stone-700 mb-2">Nombre Completo</label>
+                <input 
+                  type="text" required
+                  value={nuevoPropietario.nombre} onChange={e => setNuevoPropietario({...nuevoPropietario, nombre: e.target.value})}
+                  className="w-full px-4 py-3 rounded-xl border border-stone-200 focus:border-[#b91c1c] outline-none"
+                />
+              </div>
+              <div className="flex gap-4">
+                <div className="w-1/2">
+                  <label className="block text-sm font-semibold text-stone-700 mb-2">Teléfono</label>
+                  <input 
+                    type="text"
+                    value={nuevoPropietario.telefono} onChange={e => setNuevoPropietario({...nuevoPropietario, telefono: e.target.value})}
+                    className="w-full px-4 py-3 rounded-xl border border-stone-200 focus:border-[#b91c1c] outline-none"
+                  />
+                </div>
+                <div className="w-1/2">
+                  <label className="block text-sm font-semibold text-stone-700 mb-2">Email</label>
+                  <input 
+                    type="email"
+                    value={nuevoPropietario.email} onChange={e => setNuevoPropietario({...nuevoPropietario, email: e.target.value})}
+                    className="w-full px-4 py-3 rounded-xl border border-stone-200 focus:border-[#b91c1c] outline-none"
+                  />
+                </div>
+              </div>
+              <div className="flex justify-end gap-3 pt-4">
+                <button type="button" onClick={() => setShowPropietarioModal(false)} className="px-5 py-2.5 rounded-xl font-semibold text-stone-500 hover:bg-stone-100">Cancelar</button>
+                <button type="submit" className="px-5 py-2.5 rounded-xl font-bold bg-[#b91c1c] text-white hover:bg-red-800 shadow-lg shadow-red-900/20">Crear</button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* MODAL NUEVA OPERACION */}
+      {showOperacionModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-stone-900/50 backdrop-blur-sm">
+          <div className="bg-white rounded-3xl p-8 w-full max-w-lg shadow-2xl animate-in zoom-in-95">
+            <h2 className="text-2xl font-bold text-stone-900 mb-6">Registrar Operación</h2>
+            <form onSubmit={handleCrearOperacion} className="space-y-4">
+              <div>
+                <label className="block text-sm font-semibold text-stone-700 mb-2">Inmueble / Lote</label>
+                <select 
+                  required
+                  value={nuevaOperacion.lote_id}
+                  onChange={e => setNuevaOperacion({...nuevaOperacion, lote_id: e.target.value})}
+                  className="w-full px-4 py-3 rounded-xl border border-stone-200 focus:border-[#b91c1c] outline-none"
+                >
+                  <option value="">-- Seleccionar --</option>
+                  {lotes.filter(l => l.estado === 'Disponible').map(l => (
+                    <option key={l.id} value={l.id}>{l.codigo} - ${l.precio_m2}/m2</option>
+                  ))}
+                </select>
+              </div>
+              <div>
+                <label className="block text-sm font-semibold text-stone-700 mb-2">Comprador</label>
+                <select 
+                  required
+                  value={nuevaOperacion.comprador_id}
+                  onChange={e => setNuevaOperacion({...nuevaOperacion, comprador_id: e.target.value})}
+                  className="w-full px-4 py-3 rounded-xl border border-stone-200 focus:border-[#b91c1c] outline-none"
+                >
+                  <option value="">-- Seleccionar --</option>
+                  {compradores.map(c => (
+                    <option key={c.id} value={c.id}>{c.nombre}</option>
+                  ))}
+                </select>
+              </div>
+              <div className="flex gap-4">
+                <div className="w-1/2">
+                  <label className="block text-sm font-semibold text-stone-700 mb-2">Tipo de Operación</label>
+                  <select 
+                    required
+                    value={nuevaOperacion.tipo_operacion}
+                    onChange={e => setNuevaOperacion({...nuevaOperacion, tipo_operacion: e.target.value})}
+                    className="w-full px-4 py-3 rounded-xl border border-stone-200 focus:border-[#b91c1c] outline-none"
+                  >
+                    <option value="Venta">Venta</option>
+                    <option value="Renta">Renta</option>
+                    <option value="Reservacion">Reservación</option>
+                  </select>
+                </div>
+                <div className="w-1/2">
+                  <label className="block text-sm font-semibold text-stone-700 mb-2">Monto ($)</label>
+                  <input 
+                    type="number" step="0.01" required
+                    value={nuevaOperacion.monto} onChange={e => setNuevaOperacion({...nuevaOperacion, monto: e.target.value})}
+                    className="w-full px-4 py-3 rounded-xl border border-stone-200 focus:border-[#b91c1c] outline-none"
+                  />
+                </div>
+              </div>
+              <div className="flex justify-end gap-3 pt-4">
+                <button type="button" onClick={() => setShowOperacionModal(false)} className="px-5 py-2.5 rounded-xl font-semibold text-stone-500 hover:bg-stone-100">Cancelar</button>
+                <button type="submit" className="px-5 py-2.5 rounded-xl font-bold bg-[#b91c1c] text-white hover:bg-red-800 shadow-lg shadow-red-900/20">Registrar</button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
     </div>
   );
 }
