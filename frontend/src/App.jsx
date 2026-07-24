@@ -38,9 +38,20 @@ function App() {
               <Link to="/admin" className={`font-semibold text-sm transition-colors ${location.pathname === '/admin' ? 'text-red-600' : 'text-stone-500 hover:text-stone-900'}`}>
                 Backoffice
               </Link>
-              <a href="/#contacto" className="px-6 py-2.5 rounded-full bg-black text-white font-semibold text-sm hover:bg-neutral-800 transition-all shadow-lg hover:shadow-red-900/20 active:scale-95">
+              <button 
+                onClick={() => {
+                  if (location.pathname !== '/') {
+                    window.location.href = '/#/';
+                    setTimeout(() => {
+                      document.getElementById('contacto')?.scrollIntoView({ behavior: 'smooth' });
+                    }, 500);
+                  } else {
+                    document.getElementById('contacto')?.scrollIntoView({ behavior: 'smooth' });
+                  }
+                }}
+                className="px-6 py-2.5 rounded-full bg-black text-white font-semibold text-sm hover:bg-neutral-800 transition-all shadow-lg hover:shadow-red-900/20 active:scale-95">
                 Contacto
-              </a>
+              </button>
             </div>
           </div>
         </nav>
