@@ -36,7 +36,7 @@ export default function ProjectList() {
             <span className="text-red-700 text-xs font-bold tracking-widest uppercase">Inversión Inteligente</span>
           </div>
           <h1 className="text-5xl md:text-7xl font-['Outfit'] font-black text-stone-900 tracking-tight leading-tight mb-6">
-            Construye tu futuro <br className="hidden md:block" /> con <span className="text-transparent bg-clip-text bg-gradient-to-r from-red-600 to-red-900">Altus ERP</span>
+            Construye tu futuro <br className="hidden md:block" /> con <span className="text-transparent bg-clip-text bg-gradient-to-r from-red-600 to-red-900">1K6</span>
           </h1>
           <p className="text-stone-500 text-lg md:text-xl max-w-2xl mx-auto font-medium">
             Explora nuestros desarrollos exclusivos, visualiza disponibilidad en tiempo real mediante mapas interactivos y asegura la mejor plusvalía del mercado.
@@ -138,7 +138,7 @@ export default function ProjectList() {
 
       {/* FOOTER PUSH */}
       <div className="py-12 border-t border-stone-200/60 bg-white text-center text-stone-500 text-sm font-semibold">
-        &copy; {new Date().getFullYear()} Altus ERP. Todos los derechos reservados.
+        &copy; {new Date().getFullYear()} 1K6. Todos los derechos reservados.
       </div>
     </div>
   );
