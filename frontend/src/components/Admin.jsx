@@ -1148,7 +1148,6 @@ export default function Admin() {
             </div>
           )}
 
-          )}
 
           {activeTab === 'empleados' && (
             <div className="bg-white rounded-2xl shadow-sm border border-stone-200 overflow-hidden">
