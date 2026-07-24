@@ -12,6 +12,10 @@ export default function Admin() {
   const [propietarios, setPropietarios] = useState([]);
   const [operaciones, setOperaciones] = useState([]);
   
+  const [agentes, setAgentes] = useState([]);
+  const [inversionistas, setInversionistas] = useState([]);
+  const [comisiones, setComisiones] = useState([]);
+  
   // Modal states
   const [showProyectoModal, setShowProyectoModal] = useState(false);
   const [nuevoProyecto, setNuevoProyecto] = useState({ nombre: '', ubicacion: '', descripcion: '', logotipo_url: '' });
@@ -30,7 +34,13 @@ export default function Admin() {
   const [nuevoPropietario, setNuevoPropietario] = useState({ nombre: '', telefono: '', email: '', direccion: '', rfc: '' });
 
   const [showOperacionModal, setShowOperacionModal] = useState(false);
-  const [nuevaOperacion, setNuevaOperacion] = useState({ lote_id: '', comprador_id: '', tipo_operacion: 'Venta', monto: '', notas: '' });
+  const [nuevaOperacion, setNuevaOperacion] = useState({ lote_id: '', comprador_id: '', agente_id: '', tipo_operacion: 'Venta', monto: '', notas: '' });
+  
+  const [showAgenteModal, setShowAgenteModal] = useState(false);
+  const [nuevoAgente, setNuevoAgente] = useState({ nombre: '', telefono: '', email: '', jerarquia: 'Promotor', porcentaje_comision: 0, jefe_id: '' });
+
+  const [showInversionistaModal, setShowInversionistaModal] = useState(false);
+  const [nuevoInversionista, setNuevoInversionista] = useState({ nombre: '', telefono: '', email: '', total_invertido: 0 });
   
   const navigate = useNavigate();
 
@@ -42,6 +52,9 @@ export default function Admin() {
     fetchCompradores();
     fetchPropietarios();
     fetchOperaciones();
+    fetchAgentes();
+    fetchInversionistas();
+    fetchComisiones();
   }, []);
 
   useEffect(() => {
@@ -51,6 +64,9 @@ export default function Admin() {
     if (activeTab === 'compradores') fetchCompradores();
     if (activeTab === 'propietarios') fetchPropietarios();
     if (activeTab === 'operaciones') fetchOperaciones();
+    if (activeTab === 'agentes') fetchAgentes();
+    if (activeTab === 'inversionistas') fetchInversionistas();
+    if (activeTab === 'comisiones') fetchComisiones();
   }, [activeTab]);
 
   const fetchLotes = async () => {
@@ -102,6 +118,33 @@ export default function Admin() {
     try {
       const response = await api.get('/admin/operaciones');
       setOperaciones(Array.isArray(response.data) ? response.data : []);
+    } catch (error) {
+      handleAuthError(error);
+    }
+  };
+
+  const fetchAgentes = async () => {
+    try {
+      const response = await api.get('/admin/agentes');
+      setAgentes(Array.isArray(response.data) ? response.data : []);
+    } catch (error) {
+      handleAuthError(error);
+    }
+  };
+
+  const fetchInversionistas = async () => {
+    try {
+      const response = await api.get('/admin/inversionistas');
+      setInversionistas(Array.isArray(response.data) ? response.data : []);
+    } catch (error) {
+      handleAuthError(error);
+    }
+  };
+
+  const fetchComisiones = async () => {
+    try {
+      const response = await api.get('/admin/comisiones');
+      setComisiones(Array.isArray(response.data) ? response.data : []);
     } catch (error) {
       handleAuthError(error);
     }
@@ -209,12 +252,50 @@ export default function Admin() {
     try {
       await api.post('/admin/operaciones', nuevaOperacion);
       setShowOperacionModal(false);
-      setNuevaOperacion({ lote_id: '', comprador_id: '', tipo_operacion: 'Venta', monto: '', notas: '' });
+      setNuevaOperacion({ lote_id: '', comprador_id: '', agente_id: '', tipo_operacion: 'Venta', monto: '', notas: '' });
       fetchOperaciones();
+      fetchComisiones(); // Refresh comisiones in case one was created
       fetchLotes(); // Refresh lotes since their status might change
     } catch (error) {
       console.error(error);
       alert(error.response?.data?.error || "Error al crear operacion.");
+    }
+  };
+
+  const handleCrearAgente = async (e) => {
+    e.preventDefault();
+    try {
+      await api.post('/admin/agentes', nuevoAgente);
+      setShowAgenteModal(false);
+      setNuevoAgente({ nombre: '', telefono: '', email: '', jerarquia: 'Promotor', porcentaje_comision: 0, jefe_id: '' });
+      fetchAgentes();
+    } catch (error) {
+      console.error(error);
+      alert("Error al crear agente.");
+    }
+  };
+
+  const handleCrearInversionista = async (e) => {
+    e.preventDefault();
+    try {
+      await api.post('/admin/inversionistas', nuevoInversionista);
+      setShowInversionistaModal(false);
+      setNuevoInversionista({ nombre: '', telefono: '', email: '', total_invertido: 0 });
+      fetchInversionistas();
+    } catch (error) {
+      console.error(error);
+      alert("Error al crear inversionista.");
+    }
+  };
+
+  const handlePagarComision = async (id) => {
+    if (!window.confirm("¿Confirmar pago de comisión?")) return;
+    try {
+      await api.put(`/admin/comisiones/${id}/estado`, { estado: 'Pagada' });
+      fetchComisiones();
+    } catch (error) {
+      console.error(error);
+      alert("Error al pagar comisión.");
     }
   };
 
@@ -283,8 +364,32 @@ export default function Admin() {
             onClick={() => setActiveTab('operaciones')}
             className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-semibold transition-all ${activeTab === 'operaciones' ? 'bg-[#b91c1c] text-white shadow-lg shadow-red-900/20' : 'text-stone-400 hover:bg-stone-800 hover:text-white'}`}
           >
-            <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01" /></svg>
+            <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2-2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01" /></svg>
             Operaciones
+          </button>
+
+          <button 
+            onClick={() => setActiveTab('agentes')}
+            className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-semibold transition-all ${activeTab === 'agentes' ? 'bg-[#b91c1c] text-white shadow-lg shadow-red-900/20' : 'text-stone-400 hover:bg-stone-800 hover:text-white'}`}
+          >
+            <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" /></svg>
+            Agentes y Ventas
+          </button>
+
+          <button 
+            onClick={() => setActiveTab('inversionistas')}
+            className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-semibold transition-all ${activeTab === 'inversionistas' ? 'bg-[#b91c1c] text-white shadow-lg shadow-red-900/20' : 'text-stone-400 hover:bg-stone-800 hover:text-white'}`}
+          >
+            <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+            Inversionistas
+          </button>
+
+          <button 
+            onClick={() => setActiveTab('comisiones')}
+            className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-semibold transition-all ${activeTab === 'comisiones' ? 'bg-[#b91c1c] text-white shadow-lg shadow-red-900/20' : 'text-stone-400 hover:bg-stone-800 hover:text-white'}`}
+          >
+            <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 14l6-6m-5.5.5h.01m4.99 5h.01M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16l3.5-2 3.5 2 3.5-2 3.5 2zM10 8.5a.5.5 0 11-1 0 .5.5 0 011 0zm5 5a.5.5 0 11-1 0 .5.5 0 011 0z" /></svg>
+            Comisiones
           </button>
         </nav>
 
@@ -334,6 +439,16 @@ export default function Admin() {
             {activeTab === 'operaciones' && (
               <button onClick={() => setShowOperacionModal(true)} className="bg-[#b91c1c] text-white px-5 py-2.5 rounded-xl font-bold text-sm shadow-lg shadow-red-900/20 hover:-translate-y-0.5 transition-transform">
                 + Registrar Operación
+              </button>
+            )}
+            {activeTab === 'agentes' && (
+              <button onClick={() => setShowAgenteModal(true)} className="bg-[#b91c1c] text-white px-5 py-2.5 rounded-xl font-bold text-sm shadow-lg shadow-red-900/20 hover:-translate-y-0.5 transition-transform">
+                + Nuevo Agente
+              </button>
+            )}
+            {activeTab === 'inversionistas' && (
+              <button onClick={() => setShowInversionistaModal(true)} className="bg-[#b91c1c] text-white px-5 py-2.5 rounded-xl font-bold text-sm shadow-lg shadow-red-900/20 hover:-translate-y-0.5 transition-transform">
+                + Nuevo Inversionista
               </button>
             )}
           </header>
@@ -526,6 +641,118 @@ export default function Admin() {
                         <td className="p-5 font-medium text-emerald-600">${o.monto}</td>
                         <td className="p-5">
                           <span className="px-2 py-1 rounded bg-blue-100 text-blue-700 text-xs font-bold uppercase">{o.estado}</span>
+                        </td>
+                      </tr>
+                    ))
+                  )}
+                </tbody>
+              </table>
+            </div>
+          )}
+
+          {activeTab === 'agentes' && (
+            <div className="bg-white rounded-2xl shadow-sm border border-stone-200 overflow-hidden">
+              <table className="w-full text-left">
+                <thead className="bg-stone-50 border-b border-stone-200 text-stone-600">
+                  <tr>
+                    <th className="p-5 font-semibold text-sm">Nombre</th>
+                    <th className="p-5 font-semibold text-sm">Jerarquía</th>
+                    <th className="p-5 font-semibold text-sm">% Comisión</th>
+                    <th className="p-5 font-semibold text-sm">Jefe Directo</th>
+                    <th className="p-5 font-semibold text-sm">Contacto</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-stone-100">
+                  {agentes.length === 0 ? (
+                    <tr><td colSpan="5" className="p-8 text-center text-stone-500">No hay agentes registrados.</td></tr>
+                  ) : (
+                    agentes.map(a => (
+                      <tr key={a.id} className="hover:bg-stone-50 transition-colors group">
+                        <td className="p-5 font-bold text-stone-900">{a.nombre}</td>
+                        <td className="p-5">
+                          <span className={`px-2 py-1 rounded text-xs font-bold uppercase
+                            ${a.jerarquia === 'Gerente' ? 'bg-purple-100 text-purple-700' : 
+                              a.jerarquia === 'Coordinador' ? 'bg-blue-100 text-blue-700' : 
+                              'bg-stone-100 text-stone-700'}`}>
+                            {a.jerarquia}
+                          </span>
+                        </td>
+                        <td className="p-5 text-emerald-600 font-bold">{a.porcentaje_comision}%</td>
+                        <td className="p-5 text-stone-500 text-sm">{a.jefe_nombre || '-'}</td>
+                        <td className="p-5 text-stone-600 text-sm">{a.telefono} <br/> {a.email}</td>
+                      </tr>
+                    ))
+                  )}
+                </tbody>
+              </table>
+            </div>
+          )}
+
+          {activeTab === 'inversionistas' && (
+            <div className="bg-white rounded-2xl shadow-sm border border-stone-200 overflow-hidden">
+              <table className="w-full text-left">
+                <thead className="bg-stone-50 border-b border-stone-200 text-stone-600">
+                  <tr>
+                    <th className="p-5 font-semibold text-sm">Nombre</th>
+                    <th className="p-5 font-semibold text-sm">Teléfono</th>
+                    <th className="p-5 font-semibold text-sm">Email</th>
+                    <th className="p-5 font-semibold text-sm">Total Invertido</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-stone-100">
+                  {inversionistas.length === 0 ? (
+                    <tr><td colSpan="4" className="p-8 text-center text-stone-500">No hay inversionistas registrados.</td></tr>
+                  ) : (
+                    inversionistas.map(i => (
+                      <tr key={i.id} className="hover:bg-stone-50 transition-colors group">
+                        <td className="p-5 font-bold text-stone-900">{i.nombre}</td>
+                        <td className="p-5 text-stone-600">{i.telefono}</td>
+                        <td className="p-5 text-stone-600">{i.email}</td>
+                        <td className="p-5 font-medium text-emerald-600">${i.total_invertido}</td>
+                      </tr>
+                    ))
+                  )}
+                </tbody>
+              </table>
+            </div>
+          )}
+
+          {activeTab === 'comisiones' && (
+            <div className="bg-white rounded-2xl shadow-sm border border-stone-200 overflow-hidden">
+              <table className="w-full text-left">
+                <thead className="bg-stone-50 border-b border-stone-200 text-stone-600">
+                  <tr>
+                    <th className="p-5 font-semibold text-sm">Lote</th>
+                    <th className="p-5 font-semibold text-sm">Agente</th>
+                    <th className="p-5 font-semibold text-sm">Monto ($)</th>
+                    <th className="p-5 font-semibold text-sm">Estado</th>
+                    <th className="p-5 font-semibold text-sm">Acciones</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-stone-100">
+                  {comisiones.length === 0 ? (
+                    <tr><td colSpan="5" className="p-8 text-center text-stone-500">No hay comisiones generadas.</td></tr>
+                  ) : (
+                    comisiones.map(c => (
+                      <tr key={c.id} className="hover:bg-stone-50 transition-colors group">
+                        <td className="p-5 font-bold text-stone-900">{c.lote_codigo} ({c.tipo_operacion})</td>
+                        <td className="p-5">
+                          <div className="font-bold text-stone-900">{c.agente_nombre}</div>
+                          <div className="text-xs text-stone-500">{c.agente_jerarquia}</div>
+                        </td>
+                        <td className="p-5 font-medium text-emerald-600">${c.monto}</td>
+                        <td className="p-5">
+                          <span className={`px-3 py-1 rounded-full text-xs font-bold uppercase
+                            ${c.estado === 'Pagada' ? 'bg-emerald-100 text-emerald-700' : 'bg-amber-100 text-amber-700'}`}>
+                            {c.estado}
+                          </span>
+                        </td>
+                        <td className="p-5">
+                          {c.estado === 'Pendiente' && (
+                            <button onClick={() => handlePagarComision(c.id)} className="px-3 py-1.5 bg-emerald-600 text-white text-xs font-bold rounded-lg hover:bg-emerald-700 transition-colors">
+                              Marcar Pagada
+                            </button>
+                          )}
                         </td>
                       </tr>
                     ))
@@ -826,6 +1053,19 @@ export default function Admin() {
                   ))}
                 </select>
               </div>
+              <div>
+                <label className="block text-sm font-semibold text-stone-700 mb-2">Agente (Opcional)</label>
+                <select 
+                  value={nuevaOperacion.agente_id}
+                  onChange={e => setNuevaOperacion({...nuevaOperacion, agente_id: e.target.value})}
+                  className="w-full px-4 py-3 rounded-xl border border-stone-200 focus:border-[#b91c1c] outline-none"
+                >
+                  <option value="">-- Sin Agente --</option>
+                  {agentes.map(a => (
+                    <option key={a.id} value={a.id}>{a.nombre} ({a.porcentaje_comision}%)</option>
+                  ))}
+                </select>
+              </div>
               <div className="flex gap-4">
                 <div className="w-1/2">
                   <label className="block text-sm font-semibold text-stone-700 mb-2">Tipo de Operación</label>
@@ -852,6 +1092,132 @@ export default function Admin() {
               <div className="flex justify-end gap-3 pt-4">
                 <button type="button" onClick={() => setShowOperacionModal(false)} className="px-5 py-2.5 rounded-xl font-semibold text-stone-500 hover:bg-stone-100">Cancelar</button>
                 <button type="submit" className="px-5 py-2.5 rounded-xl font-bold bg-[#b91c1c] text-white hover:bg-red-800 shadow-lg shadow-red-900/20">Registrar</button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* MODAL NUEVO AGENTE */}
+      {showAgenteModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-stone-900/50 backdrop-blur-sm">
+          <div className="bg-white rounded-3xl p-8 w-full max-w-lg shadow-2xl animate-in zoom-in-95">
+            <h2 className="text-2xl font-bold text-stone-900 mb-6">Nuevo Agente</h2>
+            <form onSubmit={handleCrearAgente} className="space-y-4">
+              <div>
+                <label className="block text-sm font-semibold text-stone-700 mb-2">Nombre Completo</label>
+                <input 
+                  type="text" required
+                  value={nuevoAgente.nombre} onChange={e => setNuevoAgente({...nuevoAgente, nombre: e.target.value})}
+                  className="w-full px-4 py-3 rounded-xl border border-stone-200 focus:border-[#b91c1c] outline-none"
+                />
+              </div>
+              <div className="flex gap-4">
+                <div className="w-1/2">
+                  <label className="block text-sm font-semibold text-stone-700 mb-2">Teléfono</label>
+                  <input 
+                    type="text"
+                    value={nuevoAgente.telefono} onChange={e => setNuevoAgente({...nuevoAgente, telefono: e.target.value})}
+                    className="w-full px-4 py-3 rounded-xl border border-stone-200 focus:border-[#b91c1c] outline-none"
+                  />
+                </div>
+                <div className="w-1/2">
+                  <label className="block text-sm font-semibold text-stone-700 mb-2">Email</label>
+                  <input 
+                    type="email"
+                    value={nuevoAgente.email} onChange={e => setNuevoAgente({...nuevoAgente, email: e.target.value})}
+                    className="w-full px-4 py-3 rounded-xl border border-stone-200 focus:border-[#b91c1c] outline-none"
+                  />
+                </div>
+              </div>
+              <div className="flex gap-4">
+                <div className="w-1/2">
+                  <label className="block text-sm font-semibold text-stone-700 mb-2">Jerarquía</label>
+                  <select 
+                    value={nuevoAgente.jerarquia}
+                    onChange={e => setNuevoAgente({...nuevoAgente, jerarquia: e.target.value})}
+                    className="w-full px-4 py-3 rounded-xl border border-stone-200 focus:border-[#b91c1c] outline-none"
+                  >
+                    <option value="Gerente">Gerente</option>
+                    <option value="Coordinador">Coordinador</option>
+                    <option value="Promotor">Promotor</option>
+                    <option value="Influencer">Influencer</option>
+                  </select>
+                </div>
+                <div className="w-1/2">
+                  <label className="block text-sm font-semibold text-stone-700 mb-2">% Comisión Directa</label>
+                  <input 
+                    type="number" step="0.1" required
+                    value={nuevoAgente.porcentaje_comision} onChange={e => setNuevoAgente({...nuevoAgente, porcentaje_comision: e.target.value})}
+                    className="w-full px-4 py-3 rounded-xl border border-stone-200 focus:border-[#b91c1c] outline-none"
+                  />
+                </div>
+              </div>
+              <div>
+                <label className="block text-sm font-semibold text-stone-700 mb-2">Jefe Directo (Opcional)</label>
+                <select 
+                  value={nuevoAgente.jefe_id}
+                  onChange={e => setNuevoAgente({...nuevoAgente, jefe_id: e.target.value})}
+                  className="w-full px-4 py-3 rounded-xl border border-stone-200 focus:border-[#b91c1c] outline-none"
+                >
+                  <option value="">-- Ninguno --</option>
+                  {agentes.map(a => (
+                    <option key={a.id} value={a.id}>{a.nombre} ({a.jerarquia})</option>
+                  ))}
+                </select>
+              </div>
+              <div className="flex justify-end gap-3 pt-4">
+                <button type="button" onClick={() => setShowAgenteModal(false)} className="px-5 py-2.5 rounded-xl font-semibold text-stone-500 hover:bg-stone-100">Cancelar</button>
+                <button type="submit" className="px-5 py-2.5 rounded-xl font-bold bg-[#b91c1c] text-white hover:bg-red-800 shadow-lg shadow-red-900/20">Crear Agente</button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* MODAL NUEVO INVERSIONISTA */}
+      {showInversionistaModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-stone-900/50 backdrop-blur-sm">
+          <div className="bg-white rounded-3xl p-8 w-full max-w-lg shadow-2xl animate-in zoom-in-95">
+            <h2 className="text-2xl font-bold text-stone-900 mb-6">Nuevo Inversionista</h2>
+            <form onSubmit={handleCrearInversionista} className="space-y-4">
+              <div>
+                <label className="block text-sm font-semibold text-stone-700 mb-2">Nombre Completo</label>
+                <input 
+                  type="text" required
+                  value={nuevoInversionista.nombre} onChange={e => setNuevoInversionista({...nuevoInversionista, nombre: e.target.value})}
+                  className="w-full px-4 py-3 rounded-xl border border-stone-200 focus:border-[#b91c1c] outline-none"
+                />
+              </div>
+              <div className="flex gap-4">
+                <div className="w-1/2">
+                  <label className="block text-sm font-semibold text-stone-700 mb-2">Teléfono</label>
+                  <input 
+                    type="text"
+                    value={nuevoInversionista.telefono} onChange={e => setNuevoInversionista({...nuevoInversionista, telefono: e.target.value})}
+                    className="w-full px-4 py-3 rounded-xl border border-stone-200 focus:border-[#b91c1c] outline-none"
+                  />
+                </div>
+                <div className="w-1/2">
+                  <label className="block text-sm font-semibold text-stone-700 mb-2">Email</label>
+                  <input 
+                    type="email"
+                    value={nuevoInversionista.email} onChange={e => setNuevoInversionista({...nuevoInversionista, email: e.target.value})}
+                    className="w-full px-4 py-3 rounded-xl border border-stone-200 focus:border-[#b91c1c] outline-none"
+                  />
+                </div>
+              </div>
+              <div>
+                <label className="block text-sm font-semibold text-stone-700 mb-2">Total Invertido Inicial ($)</label>
+                <input 
+                  type="number" step="0.01" required
+                  value={nuevoInversionista.total_invertido} onChange={e => setNuevoInversionista({...nuevoInversionista, total_invertido: e.target.value})}
+                  className="w-full px-4 py-3 rounded-xl border border-stone-200 focus:border-[#b91c1c] outline-none"
+                />
+              </div>
+              <div className="flex justify-end gap-3 pt-4">
+                <button type="button" onClick={() => setShowInversionistaModal(false)} className="px-5 py-2.5 rounded-xl font-semibold text-stone-500 hover:bg-stone-100">Cancelar</button>
+                <button type="submit" className="px-5 py-2.5 rounded-xl font-bold bg-[#b91c1c] text-white hover:bg-red-800 shadow-lg shadow-red-900/20">Crear Inversionista</button>
               </div>
             </form>
           </div>

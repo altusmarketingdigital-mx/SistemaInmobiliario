@@ -92,6 +92,9 @@ const publicProyectosRoutes = require('./routes/publicProyectos');
 const compradoresRoutes = require('./routes/compradores');
 const propietariosRoutes = require('./routes/propietarios');
 const operacionesRoutes = require('./routes/operaciones');
+const agentesRoutes = require('./routes/agentes');
+const inversionistasRoutes = require('./routes/inversionistas');
+const comisionesRoutes = require('./routes/comisiones');
 
 // Uso de rutas (Protegidas por authMiddleware excepto publicProyectos)
 app.use('/api/auth', authRoutes);
@@ -103,6 +106,9 @@ app.use('/api/admin/planos', authMiddleware, planosRoutes);
 app.use('/api/admin/compradores', authMiddleware, compradoresRoutes);
 app.use('/api/admin/propietarios', authMiddleware, propietariosRoutes);
 app.use('/api/admin/operaciones', authMiddleware, operacionesRoutes);
+app.use('/api/admin/agentes', authMiddleware, agentesRoutes);
+app.use('/api/admin/inversionistas', authMiddleware, inversionistasRoutes);
+app.use('/api/admin/comisiones', authMiddleware, comisionesRoutes);
 
 const PORT = process.env.PORT || 5000;
 if (process.env.NODE_ENV !== 'production' && require.main === module) {
