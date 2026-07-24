@@ -16,7 +16,7 @@ function App() {
       {!isAdminRoute && (
         <nav className="fixed w-full z-50 transition-all duration-300 bg-white/70 backdrop-blur-xl border-b border-white/20 shadow-[0_4px_30px_rgba(0,0,0,0.03)]">
           <div className="max-w-7xl mx-auto px-6 h-20 flex items-center justify-between">
-            <Link to="/" className="flex items-center gap-3 group transition-transform hover:scale-105">
+            <Link to="/" onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })} className="flex items-center gap-3 group transition-transform hover:scale-105">
               <div className="relative flex flex-col items-center">
                 {/* Techo rojo del logo */}
                 <svg viewBox="0 0 100 40" className="w-16 h-5 text-[#b91c1c] fill-current relative z-10 translate-y-1 drop-shadow-sm">
@@ -32,7 +32,7 @@ function App() {
             </Link>
             
             <div className="hidden md:flex items-center gap-8">
-              <Link to="/" className={`font-semibold text-sm transition-colors ${location.pathname === '/' ? 'text-red-600' : 'text-stone-500 hover:text-stone-900'}`}>
+              <Link to="/" onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })} className={`font-semibold text-sm transition-colors ${location.pathname === '/' ? 'text-red-600' : 'text-stone-500 hover:text-stone-900'}`}>
                 Desarrollos
               </Link>
               <Link to="/admin" className={`font-semibold text-sm transition-colors ${location.pathname === '/admin' ? 'text-red-600' : 'text-stone-500 hover:text-stone-900'}`}>
