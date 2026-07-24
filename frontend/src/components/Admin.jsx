@@ -272,6 +272,21 @@ export default function Admin() {
     }
   };
 
+  const handleUpdateImage = async (proyectoId, file) => {
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onloadend = async () => {
+      try {
+        await api.put(`/admin/proyectos/${proyectoId}/imagen`, { logotipo_url: reader.result });
+        fetchProyectos();
+      } catch (error) {
+        console.error("Error updating image", error);
+        alert("Error al subir la imagen.");
+      }
+    };
+    reader.readAsDataURL(file);
+  };
+
   const handleSVGUpload = (e) => {
     const file = e.target.files[0];
     if (file) {
@@ -731,12 +746,16 @@ export default function Admin() {
               ) : (
                 proyectos.map(p => (
                   <div key={p.id} className="bg-white rounded-2xl shadow-sm border border-stone-200 p-6 flex flex-col group hover:shadow-md transition-shadow">
-                    <div className="h-32 bg-stone-100 rounded-xl mb-4 overflow-hidden relative">
+                    <div className="h-32 bg-stone-100 rounded-xl mb-4 overflow-hidden relative group/img cursor-pointer" onClick={() => document.getElementById(`upload-${p.id}`).click()}>
                       {p.logotipo_url ? (
                         <img src={p.logotipo_url} alt="Logo" className="w-full h-full object-cover opacity-80 group-hover:scale-105 transition-transform" />
                       ) : (
-                        <div className="w-full h-full flex items-center justify-center text-stone-300">Sin Imagen</div>
+                        <div className="w-full h-full flex items-center justify-center text-stone-400 font-medium text-sm">Clic para añadir foto</div>
                       )}
+                      <div className="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover/img:opacity-100 transition-opacity">
+                        <span className="text-white text-xs font-bold bg-black/50 px-3 py-1 rounded-full">Cambiar Foto</span>
+                      </div>
+                      <input id={`upload-${p.id}`} type="file" accept="image/*" className="hidden" onChange={(e) => handleUpdateImage(p.id, e.target.files[0])} />
                     </div>
                     <h3 className="font-bold text-lg text-stone-900">{p.nombre}</h3>
                     <p className="text-[#b91c1c] text-sm font-medium mb-3">{p.ubicacion}</p>
@@ -1284,12 +1303,18 @@ export default function Admin() {
                 />
               </div>
               <div>
-                <label className="block text-sm font-semibold text-stone-700 mb-2">URL de Imagen/Render (Opcional)</label>
+                <label className="block text-sm font-semibold text-stone-700 mb-2">Fotografía del Proyecto (Opcional)</label>
                 <input 
-                  type="url"
-                  value={nuevoProyecto.logotipo_url} onChange={e => setNuevoProyecto({...nuevoProyecto, logotipo_url: e.target.value})}
+                  type="file" accept="image/*"
+                  onChange={e => {
+                    const file = e.target.files[0];
+                    if (file) {
+                      const reader = new FileReader();
+                      reader.onloadend = () => setNuevoProyecto({...nuevoProyecto, logotipo_url: reader.result});
+                      reader.readAsDataURL(file);
+                    }
+                  }}
                   className="w-full px-4 py-3 rounded-xl border border-stone-200 focus:border-[#b91c1c] focus:ring-2 focus:ring-red-100 outline-none"
-                  placeholder="https://..."
                 />
               </div>
               <div className="flex justify-end gap-3 pt-4">
